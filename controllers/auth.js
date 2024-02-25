@@ -9,39 +9,22 @@ export const signup = async (req, res) => {
     const passwordHash = await bcrypt.hash(password, salt);
 
     // check if user already exists
-    let userExists;
-    pool.query(
-      "SELECT * FROM users WHERE username = $1",
-      [username],
-      (err, res) => {
-        if (err) {
-          console.log(err);
-          res.status(500).send(err.message);
-        } else {
-          userExists = res.rowCount > 0;
-        }
-      }
-    );
-    if (userExists) {
+    const user = await pool.query("SELECT * FROM users WHERE username = $1", [
+      username,
+    ]);
+    if (user.rowCount > 0) {
       return res.status(409).send("User already exists");
     }
 
     // insert new user
-    pool.query(
+    const newUser = await pool.query(
       `INSERT INTO users(id, username, password) values ($1, $2, $3) RETURNING *`,
-      [uuidv4(), username, passwordHash],
-      (err, res) => {
-        if (err) {
-          console.log(err);
-          res.status(500).send(err.message);
-        } else {
-          res
-            .status(201)
-            .send("User inserted successfully")
-            .json({ user: res.rows[0] });
-        }
-      }
+      [uuidv4(), username, passwordHash]
     );
+    res
+      .status(201)
+      .send("User inserted successfully")
+      .json({ user: newUser.rows[0] });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -51,22 +34,12 @@ export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    let user;
-    pool.query(
-      `SELECT * FROM users WHERE username = $1`,
-      [username],
-      (err, res) => {
-        if (err) {
-          console.log(err);
-          res.status(500).send(err.message);
-        } else {
-          user = res.rows[0];
-        }
-      }
-    );
+    const user = await pool.query(`SELECT * FROM users WHERE username = $1`, [
+      username,
+    ]);
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).send("Invalid credentials.");
-    res.status(200).json(user);
+    res.status(200).json(user.rows[0]);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
