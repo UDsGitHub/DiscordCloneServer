@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import { AuthRoutes } from "./routes/index.js";
 
 dotenv.config();
@@ -16,12 +17,13 @@ app.use(
     credentials: true,
   })
 );
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("welcome to the backend");
 });
 
-app.use("./auth", AuthRoutes);
+app.use("/auth", AuthRoutes);
 
 const port = process.env.PORT;
 app.listen(port, () => {
