@@ -1,9 +1,9 @@
 import pool from "../database.js";
+import jwt from "jsonwebtoken";
 
 export const getUser = async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(" ")[1];
+    const token = req.cookies.token;
 
     if (token) {
       jwt.verify(token, process.env.JWT_SECRET, {}, (err, user) => {
@@ -12,8 +12,15 @@ export const getUser = async (req, res) => {
           console.log(err);
           res.status(403).json(null);
         }
-        pool.query("SELECT * from ClientInformation WHERE ID = ?", [user.id])
-          .then((data) => res.status(200).json(data[0][0]));
+        
+        pool
+          .query(`SELECT * FROM users WHERE email = $1`, [user.email])
+          .then((result) => {
+            if (result.rowCount === 0) {
+              return res.status(400).json(null);
+            }
+            return res.status(200).json(result.rows[0]);
+          });
       });
     } else {
       return res.json(null);
@@ -21,7 +28,7 @@ export const getUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-}
+};
 
 export const getDmUsers = async (req, res) => {
   try {
@@ -47,7 +54,7 @@ export const getDmUsers = async (req, res) => {
         dmUsersResult[user["toid"]] = {
           userId: user["toid"],
           username: user["username"],
-          currentMessage: '',
+          currentMessage: "",
           messageList: [
             {
               id: user["id"],
