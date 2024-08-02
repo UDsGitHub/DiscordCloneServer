@@ -3,10 +3,13 @@ import dotenv from "dotenv";
 import cors from "cors";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
-import { AuthRoutes } from "./routes/index.js";
+import http from "http";
+import { Server } from "socket.io";
+import { AuthRoutes, UserRoutes } from "./routes/index.js";
 
 dotenv.config();
 const app = express();
+const server = http.createServer(app);
 
 app.use(express.json());
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
@@ -19,11 +22,33 @@ app.use(
 );
 app.use(cookieParser());
 
+
+
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+});
+
+io.on('connection', (socket) => {
+  console.log('user connected ', socket.id);
+  socket.on('join_room', (data) => {
+    socket.join(data.room);
+    console.log('user with id: ', socket.id, ' joined room ', data.room)
+  })
+  socket.on('send_message', (data) => {
+    console.log(data)
+    socket.to(data.room).emit('receive_message', data)
+  })
+})
+
 app.get("/", (req, res) => {
   res.send("welcome to the backend");
 });
 
 app.use("/auth", AuthRoutes);
+app.use('/user', UserRoutes)
 
 const port = process.env.PORT;
 app.listen(port, () => {
