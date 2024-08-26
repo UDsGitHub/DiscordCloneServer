@@ -33,15 +33,25 @@ const io = new Server(server, {
 
 io.on('connection', (socket) => {
   console.log('user connected ', socket.id);
+
   socket.on('join_room', (data) => {
     socket.join(data.room);
     console.log('user with id: ', socket.id, ' joined room ', data.room)
   })
+
+  socket.on('leave_room', (data) => {
+    socket.leave(data.room);
+    console.log('user with id: ', socket.id, ' left room ', data.room)
+  })
+
   socket.on('send_message', (data) => {
     console.log(data)
     socket.to(data.room).emit('receive_message', data)
   })
+
 })
+
+// ON CLICK OF A DMUSER TRIGGER JOIN ROOM TO START THE SOCKET CONNECTION
 
 app.get("/", (req, res) => {
   res.send("welcome to the backend");
@@ -51,6 +61,6 @@ app.use("/auth", AuthRoutes);
 app.use('/user', UserRoutes)
 
 const port = process.env.PORT;
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });

@@ -29,10 +29,10 @@ export const register = async (req, res) => {
       user: newUserQuery.rows[0],
     };
 
-    res.status(201).json(responseData);
     jwt.sign(user, process.env.JWT_SECRET);
+    return res.status(201).json(responseData);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).send(error.message);
   }
 };
 
@@ -45,19 +45,19 @@ export const login = async (req, res) => {
       email,
     ]);
     if (userQuery.rows.length < 1) {
-      return res.status(400).json({ message: "User not found." });
+      return res.status(400).send("User not found.");
     }
 
     const user = userQuery.rows[0];
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
-      return res.status(400).json({ message: "Invalid credentials." });
+      return res.status(400).send('Invalid credentials.');
 
     const token = jwt.sign(user, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    res.status(200).cookie("token", token).json({ user });
+    return res.status(200).cookie("token", token).json({ user });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).send(error.message);
   }
 };

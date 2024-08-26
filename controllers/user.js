@@ -9,8 +9,7 @@ export const getUser = async (req, res) => {
       jwt.verify(token, process.env.JWT_SECRET, {}, (err, user) => {
         if (err) {
           // expired token and other sorts of token errors
-          console.log(err);
-          res.status(403).json(null);
+          return res.status(403).json(null);
         }
         
         pool
@@ -26,7 +25,7 @@ export const getUser = async (req, res) => {
       return res.json(null);
     }
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).send(error.message);
   }
 };
 
@@ -39,7 +38,7 @@ export const getDmUsers = async (req, res) => {
       userId,
     ]);
     if (userQuery.rowCount === 0) {
-      return res.status(404).json({ message: "User not found", data: [] });
+      return res.status(404).send("User not found");
     }
 
     // insert new user
@@ -76,8 +75,34 @@ export const getDmUsers = async (req, res) => {
       }
     }
 
-    res.status(200).json(dmUsersResult);
+    return res.status(200).json(dmUsersResult);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).send(error.message);
+  }
+};
+
+export const sendMessageToUser = async (req, res) => {
+  try {
+    const { userId, toUserId, message } = req.body;
+
+    // check if user exists
+    const userQuery = await pool.query(`SELECT * FROM users WHERE id = $1`, [
+      userId,
+    ]);
+    if (userQuery.rowCount === 0) {
+      console.log("done with sending somewhere here"); 
+      return res.status(404).send("User not found");
+    }
+
+    // insert new user
+    await pool.query(
+      `INSERT INTO messages (fromId, toId, message, time_stamp) 
+      VALUES ($1, $2, $3, $4);`,
+      [userId, toUserId, message, new Date()]
+    );
+    console.log('done with sending message')
+    return res.status(200).json({ message: "Message sent successfully" });
+  } catch (error) {
+    return res.status(500).send(error.message);
   }
 };
