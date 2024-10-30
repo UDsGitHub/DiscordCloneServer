@@ -23,15 +23,17 @@ export const register = async (req, res) => {
       `INSERT INTO users(id, email, display_name, username, password, birthdate) values ($1, $2, $3, $4, $5, $6) RETURNING *`,
       [uuidv4(), email, displayName, username, passwordHash, birthdate]
     );
-
+    const user = newUserQuery.rows[0];
+    
     const responseData = {
       message: "User inserted successfully",
-      user: newUserQuery.rows[0],
+      user,
     };
 
     jwt.sign(user, process.env.JWT_SECRET);
     return res.status(201).json(responseData);
   } catch (error) {
+    console.log(error)
     res.status(500).send(error.message);
   }
 };
