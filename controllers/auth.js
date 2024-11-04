@@ -30,8 +30,10 @@ export const register = async (req, res) => {
       user,
     };
 
-    jwt.sign(user, process.env.JWT_SECRET);
-    return res.status(201).json(responseData);
+    const token = jwt.sign(user, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+    return res.status(201).cookie("token", token).json(responseData);
   } catch (error) {
     console.log(error)
     res.status(500).send(error.message);
