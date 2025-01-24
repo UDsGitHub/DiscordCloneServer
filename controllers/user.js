@@ -14,34 +14,34 @@ export const getDmUsers = async (req, res) => {
 
     // insert new user
     const dmUsersQuery = await pool.query(
-      `SELECT (SELECT username FROM users where id = m.toId) as username, m.* FROM messages m INNER JOIN users u ON m.fromId = u.id WHERE u.id = $1 ORDER BY m.time_stamp`,
+      `SELECT (SELECT username FROM users where id = m.to_id) as username, m.* FROM messages m INNER JOIN users u ON m.from_id = u.id WHERE u.id = $1 ORDER BY m.time_stamp`,
       [user.id]
     );
 
     const dmUsersResult = {};
     for (const user of dmUsersQuery.rows) {
-      if (!dmUsersResult[user["toid"]]) {
-        dmUsersResult[user["toid"]] = {
-          userId: user["toid"],
+      if (!dmUsersResult[user["to_id"]]) {
+        dmUsersResult[user["to_id"]] = {
+          userId: user["to_id"],
           username: user["username"],
           currentMessage: "",
           messageList: [
             {
               id: user["id"],
-              fromId: user["fromid"],
-              toId: user["toid"],
-              message: user["message"],
-              timeStamp: new Date(user["time_stamp"]),
+              fromId: user["from_id"],
+              toId: user["to_id"],
+              message: user["message_content"],
+              timeStamp: new Date(user["created_at"]),
             },
           ],
         };
       } else {
-        dmUsersResult[user["toid"]].messageList.push({
+        dmUsersResult[user["to_id"]].messageList.push({
           id: user["id"],
-          fromId: user["fromid"],
-          toId: user["toid"],
-          message: user["message"],
-          timeStamp: new Date(user["time_stamp"]),
+          fromId: user["from_id"],
+          toId: user["to_id"],
+          message: user["message_content"],
+          timeStamp: new Date(user["created_at"]),
         });
       }
     }
@@ -59,7 +59,7 @@ export const sendMessageToUser = async (req, res) => {
 
     // insert new user
     await pool.query(
-      `INSERT INTO messages (fromId, toId, message) 
+      `INSERT INTO messages (from_id, to_id, message_content)
       VALUES ($1, $2, $3);`,
       [user.id, toUserId, message]
     );
@@ -83,6 +83,7 @@ export const sendFriendRequest = async (req, res) => {
     if (userQuery.rowCount === 0) {
       return res.status(404).json({ message: "User not found" });
     }
+    const toUser = userQuery.rows[0];
 
     // check if they are already friends
     const friendsQuery = await pool.query(
@@ -93,7 +94,7 @@ export const sendFriendRequest = async (req, res) => {
       WHERE (u1.username = $1 AND u2.username = $2)
       OR (u1.username = $2 AND u2.username = $1);
     `,
-    [user.username, toUsername]
+    [user.id, toUser.id]
     );
 
     if (friendsQuery.rowCount > 0) {
@@ -103,27 +104,27 @@ export const sendFriendRequest = async (req, res) => {
     }
 
     const outGoingFriendRequestQuery = await pool.query(
-      `SELECT * FROM friend_requests WHERE from_username = $1 and to_username = $2 AND status != 1`,
-      [user.username, toUsername]
+      `SELECT * FROM friend_requests WHERE from_id = $1 and to_id = $2 AND status != 1`,
+      [user.id, toUser.id]
     );
     if (outGoingFriendRequestQuery.rowCount > 0) {
       return res.status(409).json({ message: "Friend request already exists" });
     }
 
     const incomingFriendRequestQuery = await pool.query(
-      `SELECT * FROM friend_requests WHERE to_username = $1 AND from_username = $2 AND status = 0`,
-      [user.username, toUsername]
+      `SELECT * FROM friend_requests WHERE to_id = $1 AND from_id = $2 AND status = 0`,
+      [user.id, toUser.id]
     );
     if (incomingFriendRequestQuery.rowCount > 0) {
-      addFriendByUsername(user.id, toUsername);
+      addFriendById(user.id, toUser.id);
       return res
         .status(200)
         .json({ message: `You are now friends with ${toUsername}` });
     }
 
     await pool.query(
-      "INSERT INTO friend_requests (from_username, to_username) VALUES ($1, $2);",
-      [user.username, toUsername]
+      "INSERT INTO friend_requests (from_id, to_id) VALUES ($1, $2);",
+      [user.id, toUser.id]
     );
 
     return res.status(200).json({ message: "Friend request sent" });
@@ -139,19 +140,19 @@ export const getFriendRequests = async (req, res) => {
     // insert new user
     const friendRequestQuery = await pool.query(
       `SELECT 
-      CASE WHEN from_username = $1 THEN to_username ELSE from_username END AS username,
-      CASE WHEN from_username = $1 THEN 0 ELSE 1 END AS direction, 
+      CASE WHEN from_id = $1 THEN to_id ELSE from_id END AS sender_id,
+      CASE WHEN from_id = $1 THEN 0 ELSE 1 END AS direction, 
       status 
       FROM friend_requests
-      WHERE (to_username = $1 OR from_username = $1) AND status = 0 ORDER BY time_stamp DESC;`,
-      [user.username]
+      WHERE (to_id = $1 OR from_id = $1) AND status = 0 ORDER BY created_at DESC;`,
+      [user.id]
     );
 
     const friendRequestResult = await Promise.all(
       friendRequestQuery.rows.map(async (row) => {
         const userQuery = await pool.query(
-          "SELECT * FROM users WHERE users.username = $1",
-          [row["username"]]
+          "SELECT * FROM users WHERE users.id = $1",
+          [row["sender_id"]]
         );
         if (userQuery.rowCount !== 0) {
           const result = {
@@ -216,16 +217,26 @@ export const unFriend = async (req, res) => {
 export const ignoreFriendRequest = async (req, res) => {
   try {
     const user = req.user;
-    const { friendUsername } = req.body;
-    
+    const { friendId } = req.body;
+
+    // check if user exists
+    const userQuery = await pool.query(
+      `SELECT * FROM users WHERE id = $1`,
+      [friendId]
+    );
+    if (userQuery.rowCount === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     // figure out how to do this
     await pool.query(
-      `DELETE friend_requests WHERE (to_username = $1 AND from_username = $2) OR (to_username = $2 AND from_username = $1)`,
-      [user.username, friendUsername]
+      `DELETE FROM friend_requests WHERE (to_id = $1 AND from_id = $2) OR (to_id = $2 AND from_id = $1)`,
+      [user.id, friendId]
     );
 
     return res.status(200).json({ message: "Ignored friend request" });
   } catch (error) {
+    console.log(error)
     return res.status(500).send(error.message);
   }
 };
@@ -280,29 +291,8 @@ async function addFriendById(userId, friendId) {
   await pool.query(
     `UPDATE friend_requests
       SET status = 1
-      WHERE to_username IN (
-      SELECT users.username 
-      FROM users INNER JOIN friends ON users.id = friends.user_id
-      WHERE friends.user_id = $1 AND friends.friend_id = $2);`,
-    [userId, friendId]
-  );
-}
-
-async function addFriendByUsername(userId, friendUsername) {
-  const friendUser = await pool.query('SELECT id FROM users where username = $1', [friendUsername])
-  const friendId = friendUser.rows[0]['id']
-
-  await pool.query(
-    "INSERT INTO friends (user_id, friend_id) VALUES ($1, $2);",
-    [userId, friendId]
-  );
-
-  // remove entry from friend_requests where from or to = friendId
-  await pool.query(
-    `UPDATE friend_requests
-      SET status = 1
-      WHERE to_username IN (
-      SELECT users.username 
+      WHERE to_id IN (
+      SELECT users.id 
       FROM users INNER JOIN friends ON users.id = friends.user_id
       WHERE friends.user_id = $1 AND friends.friend_id = $2);`,
     [userId, friendId]

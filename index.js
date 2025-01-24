@@ -5,7 +5,7 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import http from "http";
 import { Server } from "socket.io";
-import { AuthRoutes, UserRoutes } from "./routes/index.js";
+import { AuthRoutes, UserRoutes, ServerRoutes } from "./routes/index.js";
 
 dotenv.config();
 const app = express();
@@ -51,14 +51,13 @@ io.on('connection', (socket) => {
 
 })
 
-// ON CLICK OF A DMUSER TRIGGER JOIN ROOM TO START THE SOCKET CONNECTION
-
 app.get("/", (req, res) => {
   res.send("welcome to the backend");
 });
 
 app.use("/auth", AuthRoutes);
 app.use('/user', UserRoutes)
+app.use('/servers', ServerRoutes)
 
 const port = process.env.PORT;
 server.listen(port, () => {
