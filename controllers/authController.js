@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
-import pool from "../database.js";
+import pool from "../database/index.js";
 
 export const register = async (req, res) => {
   try {

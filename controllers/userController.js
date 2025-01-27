@@ -1,4 +1,4 @@
-import pool from "../database.js";
+import pool from "../database/index.js";
 
 export const getUser = async (req, res) => {
   try {
@@ -12,9 +12,12 @@ export const getDmUsers = async (req, res) => {
   try {
     const user = req.user;
 
-    // insert new user
+    // TODO: optimize this by getting only the userids and profile pictures 
+    // only get message log for first dmuser in table
+    // later on get messages when user clicks on the dmuser
+
     const dmUsersQuery = await pool.query(
-      `SELECT (SELECT username FROM users where id = m.to_id) as username, m.* FROM messages m INNER JOIN users u ON m.from_id = u.id WHERE u.id = $1 ORDER BY m.time_stamp`,
+      `SELECT (SELECT display_name FROM users where id = m.to_id) as display_name, m.* FROM messages m INNER JOIN users u ON m.from_id = u.id WHERE u.id = $1 ORDER BY m.time_stamp`,
       [user.id]
     );
 
@@ -23,7 +26,7 @@ export const getDmUsers = async (req, res) => {
       if (!dmUsersResult[user["to_id"]]) {
         dmUsersResult[user["to_id"]] = {
           userId: user["to_id"],
-          username: user["username"],
+          displayName: user["display_name"],
           currentMessage: "",
           messageList: [
             {
