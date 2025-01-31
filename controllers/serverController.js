@@ -6,11 +6,16 @@ export const getServers = async (req, res) => {
   try {
     const query = await pool.query(`SELECT * FROM servers s`);
 
-    const servers = query.rows.map((server) => ({
-      id: server.id,
-      name: server.server_name,
-      displayPicture: server.server_dp,
-    }));
+    const servers = await Promise.all(
+      query.rows.map(async (serverData) => {
+        const serverContent = await getServerContent(
+          serverData.id,
+          serverData.server_name,
+          serverData.server_dp
+        );
+        return serverContent;
+      })
+    );
 
     res.status(200).json(servers);
   } catch (error) {
@@ -67,41 +72,52 @@ const getChannelMessage = (channelId, messageIds) => {
   return channelMessages;
 };
 
-export const getServer = async (req, res) => {
-  try {
-    const serverId = req.params.id;
-    const serverQuery = await pool.query(
-      `SELECT * FROM servers WHERE id = $1;`,
-      [serverId]
-    );
-    const server = {
-      id: serverQuery.rows[0].id,
-      name: serverQuery.rows[0].server_name,
-      displayPicture: serverQuery.rows[0].server_dp,
-      channels: [],
-    };
-    const categoriesQuery = await pool.query(
-      `SELECT * FROM categories WHERE server_id = $1;`,
-      [serverId]
-    );
-    const categories = categoriesQuery.rows.map((category) => ({
-      categoryId: category.id,
-      categoryName: category.category_name,
-      channels: [],
-    }));
-    const channelsQuery = await pool.query(
-      `SELECT * FROM channels WHERE server_id = $1;`,
-      [serverId]
-    );
-    const channels = channelsQuery.rows.map((channel) => ({
-      id: channel.id,
-      categoryId: channel.category_id,
-      name: channel.channel_name,
-      topic: channel.channel_topic,
-      type: channel.channel_type,
-      messages: [],
-    }));
+const getServerContent = async (serverId, serverName, serverDisplayPicture) => {
+  const server = {
+    id: serverId,
+    name: serverName,
+    displayPicture: serverDisplayPicture,
+    channels: [],
+  };
 
+  const categoriesQuery = await pool.query(
+    `SELECT * FROM categories WHERE server_id = $1;`,
+    [serverId]
+  );
+  const categories = categoriesQuery.rows.map((category) => ({
+    id: category.id,
+    name: category.category_name,
+    channels: [],
+  }));
+  const channelsQuery = await pool.query(
+    `SELECT * FROM channels WHERE server_id = $1;`,
+    [serverId]
+  );
+  const channels = channelsQuery.rows.map((channel) => ({
+    id: channel.id,
+    categoryId: channel.category_id,
+    name: channel.channel_name,
+    topic: channel.channel_topic,
+    type: channel.channel_type,
+    currentMessage: "",
+    messages: [],
+  }));
+
+  const membersQuery = await pool.query(
+    `SELECT u.id, u.display_name, sm.nickname
+      FROM server_members sm 
+      INNER JOIN users u ON sm.user_id = u.id
+      WHERE server_id = $1`,
+    [serverId]
+  );
+
+  const members = membersQuery.rows.map((member) => ({
+    userId: member.user_id,
+    displayName: member.display_name,
+    nickname: member.nickname,
+  }));
+
+  if (channels.length) {
     const channelMessageIds = await pool.query(
       `SELECT id 
         FROM channel_messages cm
@@ -114,23 +130,24 @@ export const getServer = async (req, res) => {
     );
 
     channels[0].messages = await Promise.all(channelMessages);
-
-    categories.forEach((category) => {
-      category.channels = channels.filter((channel) => {
-        if (channel.categoryId === category.categoryId) {
-          return channel;
-        } else {
-          server.channels.push(channel);
-        }
-      });
-    });
-
-    server.categories = categories;
-    return res.status(200).json(server);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Internal server error" });
   }
+
+  categories.forEach((category) => {
+    category.channels = channels.filter((channel) => {
+      if (channel.categoryId === category.id) {
+        return channel;
+      } else {
+        server.channels.push(channel);
+      }
+    });
+  });
+
+  server.channels = channels.filter((channel) => !channel.categoryId);
+  server.lastSelectedChannel = categories[0].channels[0].id;
+  server.categories = categories;
+  server.members = members;
+
+  return server;
 };
 
 export const getChannelInfo = async (req, res) => {
@@ -147,6 +164,7 @@ export const getChannelInfo = async (req, res) => {
       name: channelQuery.rows[0].channel_name,
       topic: channelQuery.rows[0].channel_topic,
       type: channelQuery.rows[0].channel_type,
+      currentMessage: "",
       messages: [],
     };
 
@@ -198,12 +216,20 @@ export const createServer = async (req, res) => {
       [serverId, "TEXT CHANNELS", "VOICE CHANNELS"]
     );
 
-    categoryQuery.rows.forEach(async (category) => {
-      await pool.query(
-        `INSERT INTO channels(id, server_id, category_id, channel_name, channel_type)
-        VALUES ($1, $3, $4, $5, 0), ($2, $3, $4, $6, 1);`,
-        [uuidv4(), uuidv4(), serverId, category.id, "general", "General"]
-      );
+    categoryQuery.rows.forEach(async (category, index) => {
+      if (index == 0) {
+        await pool.query(
+          `INSERT INTO channels(id, server_id, category_id, channel_name, channel_type)
+        VALUES ($1, $2, $3, $4, 0)`,
+          [uuidv4(), serverId, category.id, "general"]
+        );
+      } else {
+        await pool.query(
+          `INSERT INTO channels(id, server_id, category_id, channel_name, channel_type)
+        VALUES ($1, $2, $3, $4, 1)`,
+          [uuidv4(), serverId, category.id, "General"]
+        );
+      }
     });
 
     // add user to server as admin
