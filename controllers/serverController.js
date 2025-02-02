@@ -27,10 +27,10 @@ export const getServers = async (req, res) => {
 const getChannelMessage = (channelId, messageIds) => {
   const channelMessages = messageIds.map(async (messageId) => {
     const messageQuery = await pool.query(
-      `SELECT cm.id, cm.content, cm.timestamp, u.id as user_id, u.username, u.display_name, u.user_dp
+      `SELECT cm.id, cm.message_content, cm.ref_message_id, cm.time_stamp, u.id as user_id, u.username, u.display_name
             FROM channel_messages cm
             INNER JOIN users u ON cm.from_id = u.id
-            WHERE channel_id = $1 AND cm.id = $2;`,
+            WHERE cm.channel_id = $1 AND cm.id = $2;`,
       [channelId, messageId]
     );
 
@@ -38,7 +38,7 @@ const getChannelMessage = (channelId, messageIds) => {
     let refMessage = undefined;
     if (refMessageId) {
       const refMessageQuery = await pool.query(
-        `SELECT cm.id, cm.content, cm.timestamp, u.id as user_id, u.username, u.display_name, u.user_dp
+        `SELECT cm.id, cm.content, cm.time_stamp, u.id as user_id, u.username, u.display_name
                 FROM channel_messages cm
                 INNER JOIN users u ON cm.from_id = u.id
                 WHERE channel_id = $1 AND cm.id = $2;`,
@@ -46,8 +46,8 @@ const getChannelMessage = (channelId, messageIds) => {
       );
       refMessage = {
         id: refMessageQuery.rows[0].id,
-        content: refMessageQuery.rows[0].content,
-        timestamp: refMessageQuery.rows[0].timestamp,
+        content: refMessageQuery.rows[0].message_content,
+        timestamp: refMessageQuery.rows[0].time_stamp,
         author: {
           userId: refMessageQuery.rows[0].user_id,
           displayName: refMessageQuery.rows[0].display_name,
@@ -58,8 +58,8 @@ const getChannelMessage = (channelId, messageIds) => {
 
     const message = {
       id: messageQuery.rows[0].id,
-      content: messageQuery.rows[0].content,
-      timestamp: messageQuery.rows[0].timestamp,
+      content: messageQuery.rows[0].message_content,
+      timestamp: messageQuery.rows[0].time_stamp,
       author: {
         userId: messageQuery.rows[0].user_id,
         displayName: messageQuery.rows[0].display_name,
@@ -93,7 +93,7 @@ const getServerContent = async (serverId, serverName, serverDisplayPicture) => {
     `SELECT * FROM channels WHERE server_id = $1;`,
     [serverId]
   );
-  const channels = channelsQuery.rows.map((channel) => ({
+  let channels = channelsQuery.rows.map((channel) => ({
     id: channel.id,
     categoryId: channel.category_id,
     name: channel.channel_name,
@@ -118,18 +118,29 @@ const getServerContent = async (serverId, serverName, serverDisplayPicture) => {
   }));
 
   if (channels.length) {
-    const channelMessageIds = await pool.query(
-      `SELECT id 
-        FROM channel_messages cm
+    const textChannels = channels.filter((channel) => channel.type === 0);
+    if (textChannels.length) {
+      const channelMessageIds = await pool.query(
+        `SELECT id 
+        FROM channel_messages
         WHERE channel_id = $1;`,
-      [channels[0].channelId]
-    );
-    const channelMessages = getChannelMessage(
-      channels[0].channelId,
-      channelMessageIds.rows.map((message) => message.id)
-    );
+        [textChannels[0].id]
+      );
 
-    channels[0].messages = await Promise.all(channelMessages);
+      const channelMessages = getChannelMessage(
+        textChannels[0].id,
+        channelMessageIds.rows.map((message) => message.id)
+      );
+
+      textChannels[0].messages = await Promise.all(channelMessages);
+
+      channels = channels.map((channel) => {
+        if (channel.id === textChannels[0].id) {
+          return textChannels[0];
+        }
+        return channel;
+      });
+    }
   }
 
   categories.forEach((category) => {
@@ -152,11 +163,10 @@ const getServerContent = async (serverId, serverName, serverDisplayPicture) => {
 
 export const getChannelInfo = async (req, res) => {
   try {
-    const serverId = req.params.id;
     const channelId = req.params.channelId;
     const channelQuery = await pool.query(
-      `SELECT * FROM channels WHERE server_id = $1 AND id = $2;`,
-      [serverId, channelId]
+      `SELECT * FROM channels WHERE id = $1;`,
+      [channelId]
     );
     const channel = {
       id: channelQuery.rows[0].id,
@@ -248,6 +258,46 @@ export const createServer = async (req, res) => {
     };
 
     res.status(201).json(responseData);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const sendChannelMessage = async (req, res) => {
+  try {
+    const {
+      channelId,
+      author: { userId },
+      content,
+      timeStamp,
+      refMessageId,
+    } = req.body;
+
+    await pool.query(
+      `INSERT INTO channel_messages(channel_id, from_id, ref_message_id, message_content, time_stamp)
+          VALUES($1, $2, $3, $4, $5);`,
+      [channelId, userId, refMessageId, content, timeStamp]
+    );
+
+    res.status(200).json({ message: "Message sent successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const createChannel = async (req, res) => {
+  try {
+    const { name, type, serverId, categoryId } = req.body;
+
+    await pool.query(
+      `INSERT INTO channels(id, server_id, channel_name, channel_type, category_id)
+          VALUES($1, $2, $3, $4, $5);`,
+      [uuidv4(), serverId, name, type, categoryId]
+    );
+
+    res.status(200).json({ message: "Channel created successfully" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
