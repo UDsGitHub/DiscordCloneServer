@@ -291,13 +291,13 @@ export const createChannel = async (req, res) => {
   try {
     const { name, type, serverId, categoryId } = req.body;
 
-    await pool.query(
+    const channelQuery = await pool.query(
       `INSERT INTO channels(id, server_id, channel_name, channel_type, category_id)
-          VALUES($1, $2, $3, $4, $5);`,
+          VALUES($1, $2, $3, $4, $5) RETURNING id;`,
       [uuidv4(), serverId, name, type, categoryId]
     );
 
-    res.status(200).json({ message: "Channel created successfully" });
+    res.status(200).json({id: channelQuery.rows[0].id});
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
