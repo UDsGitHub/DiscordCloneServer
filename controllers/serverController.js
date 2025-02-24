@@ -163,7 +163,7 @@ const getServerContent = async (serverId, serverName, serverDisplayPicture) => {
 
 export const getChannelInfo = async (req, res) => {
   try {
-    const channelId = req.params.channelId;
+    const channelId = req.params.id;
     const channelQuery = await pool.query(
       `SELECT * FROM channels WHERE id = $1;`,
       [channelId]
@@ -298,6 +298,22 @@ export const createChannel = async (req, res) => {
     );
 
     res.status(200).json({id: channelQuery.rows[0].id});
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const deleteChannel = async (req, res) => {
+  try {
+    const channelId = req.params.id
+
+    await pool.query(
+      `DELETE FROM channels WHERE id = $1`,
+      [channelId]
+    );
+
+    res.status(200).json({message: 'successfully deleted channel'});
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
