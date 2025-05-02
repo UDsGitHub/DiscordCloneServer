@@ -14,10 +14,10 @@ app.use(express.urlencoded({ limit: "30mb", extended: true }));
 app.use(cors({ origin: config.corsOrigin, credentials: true }));
 app.use(cookieParser());
 
-app.use("/auth", authRoutes);
-app.use("/user", verifyToken, userRoutes);
-app.use("/server", verifyToken, serverRoutes);
-app.use("/data/uploads", express.static("data/uploads"));
+app.use("/api/auth", authRoutes);
+app.use("/api/user", verifyToken, userRoutes);
+app.use("/api/server", verifyToken, serverRoutes);
+app.use("/api/data/uploads", express.static("data/uploads"));
 
 app.use(errorHandler);
 
