@@ -33,7 +33,15 @@ export const register = async (req, res) => {
     const token = jwt.sign(user, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    return res.status(201).cookie("token", token).json(responseData);
+    return res
+      .status(201)
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+        maxAge: 60 * 60 * 1000, // 1 hour
+      })
+      .json(responseData);
   } catch (error) {
     console.log(error)
     res.status(500).send(error.message);
@@ -60,7 +68,15 @@ export const login = async (req, res) => {
     const token = jwt.sign(user, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    return res.status(200).cookie("token", token).json({ user });
+    return res
+      .status(200)
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+        maxAge: 60 * 60 * 1000,
+      })
+      .json({ user });
   } catch (error) {
     return res.status(500).send(error.message);
   }
