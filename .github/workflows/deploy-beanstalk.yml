@@ -7,51 +7,51 @@ on:
 
 jobs:
   build-and-deploy:
-  runs-on: ubuntu-latest
-  env:
-    SERVER_DIR: .
-    ARTIFACT_NAME: server-${{ github.sha }}.zip
-    S3_KEY_PREFIX: releases
-  steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+    runs-on: ubuntu-latest
+    env:
+      SERVER_DIR: .
+      ARTIFACT_NAME: server-${{ github.sha }}.zip
+      S3_KEY_PREFIX: releases
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18
-    
-    - name: Install & build server
-      working-directory: ${{ $env.SERVER_DIR }}
-      run: |
-        npm ci
-        if npm run | grep -q " build"; then
-          npm run build
-        fi
-    
-    - name: Prepare artifact (zip server folder)
-      run: |
-        cd ${{ env.SERVER_DIR }}
-        zip -r ../${ARTIFACT_NAME} . -x "node_modules/*" "*./git*" ".env.*" "data/uploads/*"
-    
-    - name: Upload artifact to S3
-      run: |
-        aws s3 cp ${ARTIFACT_NAME} s3://${{ secrets.S3_BUCKET }}/${{ $env.S3_KEY_PREFIX }}/${{ARTIFACT_NAME}}
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      
+      - name: Install & build server
+        working-directory: ${{ $env.SERVER_DIR }}
+        run: |
+          npm ci
+          if npm run | grep -q " build"; then
+            npm run build
+          fi
+      
+      - name: Prepare artifact (zip server folder)
+        run: |
+          cd ${{ env.SERVER_DIR }}
+          zip -r ../${ARTIFACT_NAME} . -x "node_modules/*" "*./git*" ".env.*" "data/uploads/*"
+      
+      - name: Upload artifact to S3
+        run: |
+          aws s3 cp ${ARTIFACT_NAME} s3://${{ secrets.S3_BUCKET }}/${{ env.S3_KEY_PREFIX }}/${{ARTIFACT_NAME}}
 
-    - name: Create Elastic Beanstalk application version
-      id: create-version
-      run: |
-        VERSION_LABEL=${{ github.sha }}
-        aws elasticbeanstalk create-application-version \
-          --application-name "${{ secret.S3_BUCKET }}",S3Key="${{ env.S3_KEY_PREFIX }}/${ARTIFACT_NAME}" \
-          --version-label "$VERSION_LABEL" \
-          --source-bundle S3Bucket="${{ secrets.S3_BUCKET }}",S3Key="${{ env.S3_KEY_PREFIX }}/${ARTIFACT_NAME}"
-          --auto-create-application
+      - name: Create Elastic Beanstalk application version
+        id: create-version
+        run: |
+          VERSION_LABEL=${{ github.sha }}
+          aws elasticbeanstalk create-application-version \
+            --application-name "${{ secret.S3_BUCKET }}",S3Key="${{ env.S3_KEY_PREFIX }}/${ARTIFACT_NAME}" \
+            --version-label "$VERSION_LABEL" \
+            --source-bundle S3Bucket="${{ secrets.S3_BUCKET }}",S3Key="${{ env.S3_KEY_PREFIX }}/${ARTIFACT_NAME}"
+            --auto-create-application
 
-    - name: Update Elastic Beanstalk environment
-      run: |
-        VERSION_LABEL=${{ github.sha }}
-        aws elasticbeanstalk update-environment \
-          --environment-name "${{ secrets.EB_ENVIRONMENT_NAME }}" \
-          --version-label "$VERSION_LABEL"
+      - name: Update Elastic Beanstalk environment
+        run: |
+          VERSION_LABEL=${{ github.sha }}
+          aws elasticbeanstalk update-environment \
+            --environment-name "${{ secrets.EB_ENVIRONMENT_NAME }}" \
+            --version-label "$VERSION_LABEL"
       
