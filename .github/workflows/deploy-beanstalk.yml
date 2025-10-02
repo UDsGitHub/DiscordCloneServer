@@ -9,7 +9,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
-      SERVER_DIR: server
+      SERVER_DIR: "."
       ARTIFACT_NAME: server-${{ github.sha }}.zip
       S3_KEY_PREFIX: releases
     steps:
