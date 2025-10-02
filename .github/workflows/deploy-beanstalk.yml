@@ -34,7 +34,7 @@ jobs:
         run: |
           cd ${{ env.SERVER_DIR }}
           # Exclude node_modules to let EB install deps (or include if you prefer)
-          zip -r ../${ARTIFACT_NAME} . -x "node_modules/*" "*.git*" ".env*" "data/uploads/*"
+          zip -r ${ARTIFACT_NAME} . -x "node_modules/*" "*.git*" ".env*" "data/uploads/*"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
