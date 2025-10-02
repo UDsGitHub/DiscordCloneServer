@@ -8,4 +8,12 @@ export class ServerMember {
     this.displayName = displayName;
     this.nickname = nickname;
   }
+
+  toString() {
+    return {
+      userId: this.userId,
+      displayName: this.displayName,
+      nickname: this.nickname,
+    };
+  }
 }

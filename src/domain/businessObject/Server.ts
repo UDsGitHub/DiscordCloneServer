@@ -28,4 +28,20 @@ export class Server {
     this.categories = categories;
     this.members = members;
   }
+
+  toString() {
+    const channels = this.channels.map((channel) => channel.toString());
+    const categories = this.categories.map((category) => category.toString());
+    const members = this.members.map((member) => member.toString());
+
+    return {
+      id: this.id,
+      name: this.name,
+      displayPicture: this.displayPicture,
+      channels: channels,
+      lastSelectedChannel: this.lastSelectedChannel,
+      categories: categories,
+      members: members,
+    };
+  }
 }

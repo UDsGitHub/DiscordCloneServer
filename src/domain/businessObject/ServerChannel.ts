@@ -36,4 +36,17 @@ export class ServerChannel {
     this.messages = messages;
     this.categoryId = categoryId;
   }
+
+  toString(): Record<string, any> {
+    const messages = this.messages.map((message) => message.toString());
+    return {
+      id: this.id,
+      name: this.name,
+      topic: this.topic,
+      type: this.type,
+      currentMessage: this.currentMessage,
+      messages: messages,
+      categoryId: this.categoryId,
+    };
+  }
 }

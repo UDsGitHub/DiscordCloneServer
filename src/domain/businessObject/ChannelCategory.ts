@@ -10,4 +10,13 @@ export class ChannelCategory {
     this.name = name;
     this.channels = channels;
   }
+
+  toString() {
+    const channels = this.channels.map(channel => channel.toString())
+    return {
+      id: this.id,
+      name: this.name,
+      channels: this.channels,
+    };
+  }
 }

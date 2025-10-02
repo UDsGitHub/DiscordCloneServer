@@ -28,9 +28,9 @@ export class ServerController {
     try {
       const channelId = req.params.id;
       const getChannelInfoUseCase = new GetChannelInfoUseCase();
-      const channelInfo = getChannelInfoUseCase.getChannelInfo(channelId);
+      const channelInfo = await getChannelInfoUseCase.getChannelInfo(channelId);
 
-      return res.status(200).json(channelInfo);
+      return res.status(200).json(channelInfo.toString());
     } catch (error) {
       console.log(error);
       res.status(500).json({ message: "Internal server error" });

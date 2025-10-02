@@ -25,4 +25,12 @@ export class FriendRequest {
     this.direction = direction;
     this.status = status;
   }
+
+  toString() {
+    return {
+      user: this.user,
+      direction: this.direction,
+      status: this.status,
+    };
+  }
 }

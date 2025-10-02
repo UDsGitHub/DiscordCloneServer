@@ -6,15 +6,15 @@ export class GetDmUsersUseCase {
   #userService = new UserService();
   constructor() {}
 
-  async getDmUsers(userId: string) {
+  async getDmUsers(userId: string): Promise<Record<string, DmUser>> {
     /** // TODO: 
     optimize this by getting only the userids and profile pictures
     only get message log for first dmuser in table
     later on get messages when user clicks on the dmuser **/
-    
+
     const dmUsersResponse = await this.#userService.getDmUsers(userId);
 
-    const dmUsersResult = {};
+    const dmUsersResult: Record<string, DmUser> = {};
     for (const user of dmUsersResponse) {
       if (!dmUsersResult[user.to_id]) {
         const dmUser = new DmUser(user.to_id, user.display_name, "", [
@@ -38,5 +38,7 @@ export class GetDmUsersUseCase {
         dmUsersResult[user["to_id"]].messageList.push(message);
       }
     }
+
+    return dmUsersResult;
   }
 }

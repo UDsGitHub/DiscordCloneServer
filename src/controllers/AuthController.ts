@@ -4,7 +4,6 @@ import { RegisterUserUseCase } from "../domain/usecase/RegisterUserUseCase.js";
 import { LoginUserUseCase } from "../domain/usecase/LoginUserUseCase.js";
 
 export class AuthController {
-
   constructor() {}
 
   async register(req: Request, res: Response) {
@@ -45,8 +44,8 @@ export class AuthController {
       const loginUserUseCase = new LoginUserUseCase();
       const user = await loginUserUseCase.loginUser(email, password);
 
-      const token = jwt.sign(user, process.env.JWT_SECRET, {
-        expiresIn: "1h",
+      const token = jwt.sign(user.toString(), process.env.JWT_SECRET, {
+        expiresIn: '1h',
       });
       return res
         .status(200)
@@ -58,7 +57,8 @@ export class AuthController {
         })
         .json({ user });
     } catch (error) {
-      return res.status(error.cause.status ?? 500).send(error.message);
+      console.log(error);
+      return res.status(error.cause?.status ?? 500).send(error.message);
     }
   }
 }

@@ -12,9 +12,7 @@ export class UserController {
 
   async getUser(req: VerifyTokenRequest, res: Response) {
     try {
-      return res
-        .status(200)
-        .json(this.#userService.createUserFromQueryResult(req.user));
+      return res.status(200).json(req.user);
     } catch (error) {
       return res.status(500).send(error.message);
     }

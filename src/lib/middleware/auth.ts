@@ -24,10 +24,12 @@ const verifyToken = async (
       token,
       process.env.JWT_SECRET
     ) as DefaultQueryObjectResult;
+
+    console.log("verified user: ", verifiedUser);
     req.user = new AppUser(
       verifiedUser.id,
       verifiedUser.email,
-      verifiedUser.display_name,
+      verifiedUser.displayName,
       verifiedUser.username,
       verifiedUser.birthdate
     );

@@ -17,4 +17,14 @@ export class DmUser {
     this.currentMessage = currentMessage;
     this.messageList = messageList;
   }
+
+  toString() {
+    const messageList = this.messageList.map((message) => message.toString());
+    return {
+      userId: this.userId,
+      displayName: this.displayName,
+      currentMessage: this.currentMessage,
+      messageList,
+    };
+  }
 }
