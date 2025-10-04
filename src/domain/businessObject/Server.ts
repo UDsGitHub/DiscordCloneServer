@@ -29,10 +29,10 @@ export class Server {
     this.members = members;
   }
 
-  toString() {
-    const channels = this.channels.map((channel) => channel.toString());
-    const categories = this.categories.map((category) => category.toString());
-    const members = this.members.map((member) => member.toString());
+  toJSON() {
+    const channels = this.channels.map((channel) => channel.toJSON());
+    const categories = this.categories.map((category) => category.toJSON());
+    const members = this.members.map((member) => member.toJSON());
 
     return {
       id: this.id,

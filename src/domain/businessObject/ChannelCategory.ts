@@ -11,12 +11,12 @@ export class ChannelCategory {
     this.channels = channels;
   }
 
-  toString() {
-    const channels = this.channels.map(channel => channel.toString())
+  toJSON() {
+    const channels = this.channels.map((channel) => channel.toJSON());
     return {
       id: this.id,
       name: this.name,
-      channels: this.channels,
+      channels,
     };
   }
 }

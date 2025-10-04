@@ -1,18 +1,22 @@
 import { ChannelType, ServerRole } from "../businessObject/ServerChannel.js";
 import { ServerService } from "../service/implementation/ServerService.js";
+import { BaseUseCase } from "./BaseUseCase.js";
 
-export type CreateServerRequest = {
+type Request = {
   userId: string;
   serverName: string;
   displayImagePath?: string;
 };
 
-export class CreateServerUseCase {
+type Response = {
+  message: string,
+  server: {id: string, name: string, displayPicture: string}
+}
+
+export class CreateServerUseCase extends BaseUseCase<[Request], Promise<Response>, Response> {
   #serverService = new ServerService();
 
-  constructor() {}
-
-  async createServer(request: CreateServerRequest) {
+  async handle(request: Request) {
     const { userId, serverName, displayImagePath } = request;
 
     const serverId = await this.#serverService.createServer(
@@ -30,7 +34,7 @@ export class CreateServerUseCase {
       ServerRole.ADMIN
     );
 
-    const responseData = {
+    return {
       message: "Server created successfully",
       server: {
         id: serverId,

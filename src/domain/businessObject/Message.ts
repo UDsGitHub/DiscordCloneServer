@@ -24,13 +24,13 @@ export class Message {
     this.refMessage = refMessage;
   }
 
-  toString(): Record<string, any> {
+  toJSON(): Record<string, any> {
     return {
       id: this.id,
       content: this.content,
       timestamp: this.timestamp,
       author: this.author,
-      refMessage: this.refMessage.toString(),
+      refMessage: this.refMessage?.toJSON(),
     };
   }
 }

@@ -37,8 +37,8 @@ export class ServerChannel {
     this.categoryId = categoryId;
   }
 
-  toString(): Record<string, any> {
-    const messages = this.messages.map((message) => message.toString());
+  toJSON(): Record<string, any> {
+    const messages = this.messages.map((message) => message.toJSON());
     return {
       id: this.id,
       name: this.name,

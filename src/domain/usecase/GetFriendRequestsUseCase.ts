@@ -1,12 +1,13 @@
 import { FriendRequest } from "../businessObject/FriendRequest.js";
 import { UserService } from "../service/interface/UserService.js";
+import { BaseUseCase } from "./BaseUseCase.js";
 
-export class GetFriendRequestsUseCase {
+type Response = Record<string, any>[];
+
+export class GetFriendRequestsUseCase extends BaseUseCase<[string], Promise<Response>, Response> {
   #userService = new UserService();
 
-  constructor() {}
-
-  async getFriendRequests(userId: string): Promise<FriendRequest[]> {
+  async handle(userId: string): Promise<Response> {
     const friendRequestResponse = await this.#userService.getFriendRequests(
       userId
     );
@@ -26,7 +27,9 @@ export class GetFriendRequestsUseCase {
         )
       );
     }
+    
+    const output = requests.map(request => request.toJSON())
 
-    return Promise.all(requests);
+    return Promise.all(output);
   }
 }

@@ -26,7 +26,7 @@ export class FriendRequest {
     this.status = status;
   }
 
-  toString() {
+  toJSON() {
     return {
       user: this.user,
       direction: this.direction,

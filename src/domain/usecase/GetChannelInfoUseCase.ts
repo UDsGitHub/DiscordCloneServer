@@ -1,14 +1,13 @@
 import { ServerChannel } from "../businessObject/ServerChannel.js";
 import { ServerService } from "../service/implementation/ServerService.js";
+import { BaseUseCase } from "./BaseUseCase.js";
 import { GetChannelMessagesUseCase } from "./GetChannelMessagesUseCase.js";
 
-export class GetChannelInfoUseCase {
+export class GetChannelInfoUseCase extends BaseUseCase<[string], Promise<ServerChannel>, Record<string, any>> {
   #serverService = new ServerService();
   #getChannelMessageUseCase = new GetChannelMessagesUseCase();
 
-  constructor() {}
-
-  async getChannelInfo(channelId: string) {
+  async handle(channelId: string) {
     const channelInfoResponse = await this.#serverService.getChannelInfo(
       channelId
     );

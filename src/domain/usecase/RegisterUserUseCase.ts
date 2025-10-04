@@ -2,24 +2,35 @@ import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import { UserService } from "../service/interface/UserService.js";
 import { AppUser } from "../businessObject/AppUser.js";
+import { BaseUseCase } from "./BaseUseCase.js";
 
 type Response = {
   message: string;
-  user: AppUser;
+  user: Record<string, any>;
 };
 
-export class RegisterUserUseCase {
+type Request = {
+  email: string;
+  displayName: string;
+  username: string;
+  password: string;
+  birthdate: string;
+};
+
+export class RegisterUserUseCase extends BaseUseCase<
+  [Request],
+  Promise<Response>,
+  Response
+> {
   #userService = new UserService();
 
-  constructor() {}
-
-  async registerUser(
-    email: string,
-    displayName: string,
-    username: string,
-    password: string,
-    birthdate: string
-  ): Promise<Response> {
+  async handle({
+    email,
+    displayName,
+    username,
+    password,
+    birthdate,
+  }: Request): Promise<Response> {
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(password, salt);
 
@@ -41,7 +52,7 @@ export class RegisterUserUseCase {
 
     return {
       message: "User inserted successfully",
-      user: newUser,
+      user: newUser.toJSON(),
     };
   }
 }

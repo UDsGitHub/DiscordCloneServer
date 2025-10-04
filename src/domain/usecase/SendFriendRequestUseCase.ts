@@ -1,14 +1,14 @@
 import { UserService } from "../service/interface/UserService.js";
+import { BaseUseCase } from "./BaseUseCase.js";
 
-export class SendFriendRequestUseCase {
+export class SendFriendRequestUseCase extends BaseUseCase<
+  [string, string],
+  Promise<string>,
+  string
+> {
   #userService = new UserService();
 
-  constructor() {}
-
-  async sendFriendRequest(
-    fromUserId: string,
-    toUsername: string
-  ): Promise<string> {
+  async handle(fromUserId: string, toUsername: string): Promise<string> {
     // check if user exists
     const friendUser = await this.#userService.getUserByUsername(toUsername);
     if (!friendUser) {

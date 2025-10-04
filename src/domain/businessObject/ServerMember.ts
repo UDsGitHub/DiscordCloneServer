@@ -9,7 +9,7 @@ export class ServerMember {
     this.nickname = nickname;
   }
 
-  toString() {
+  toJSON() {
     return {
       userId: this.userId,
       displayName: this.displayName,

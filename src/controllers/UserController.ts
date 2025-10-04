@@ -12,7 +12,7 @@ export class UserController {
 
   async getUser(req: VerifyTokenRequest, res: Response) {
     try {
-      return res.status(200).json(req.user);
+      return res.status(200).json(req.user.toJSON());
     } catch (error) {
       return res.status(500).send(error.message);
     }
@@ -22,7 +22,7 @@ export class UserController {
     try {
       const user = req.user;
       const getDmUsersUseCase = new GetDmUsersUseCase();
-      const dmUsers = await getDmUsersUseCase.getDmUsers(user.id);
+      const dmUsers = await getDmUsersUseCase.execute(user.id);
 
       return res.status(200).json(dmUsers);
     } catch (error) {
@@ -49,7 +49,7 @@ export class UserController {
       const { toUsername } = req.body;
 
       const sendFriendRequestUseCase = new SendFriendRequestUseCase();
-      const responseMessage = await sendFriendRequestUseCase.sendFriendRequest(
+      const responseMessage = await sendFriendRequestUseCase.execute(
         user.id,
         toUsername
       );
@@ -65,8 +65,9 @@ export class UserController {
       const user = req.user;
 
       const getFriendRequestsUseCase = new GetFriendRequestsUseCase();
-      const friendRequestResponse =
-        await getFriendRequestsUseCase.getFriendRequests(user.id);
+      const friendRequestResponse = await getFriendRequestsUseCase.execute(
+        user.id
+      );
 
       return res.status(200).json(friendRequestResponse);
     } catch (error) {

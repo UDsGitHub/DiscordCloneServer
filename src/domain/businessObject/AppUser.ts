@@ -19,7 +19,7 @@ export class AppUser {
     this.birthdate = new Date(birthdate);
   }
 
-  toString(): Record<string, string> {
+  toJSON() {
     return {
       id: this.id,
       email: this.email,

@@ -10,13 +10,13 @@ export class AuthController {
     try {
       const { email, displayName, username, password, birthdate } = req.body;
       const registerUserUseCase = new RegisterUserUseCase();
-      const responseData = await registerUserUseCase.registerUser(
+      const responseData = await registerUserUseCase.execute({
         email,
         displayName,
         username,
         password,
-        birthdate
-      );
+        birthdate,
+      });
 
       const token = jwt.sign(responseData.user, process.env.JWT_SECRET, {
         expiresIn: "1h",
@@ -42,10 +42,10 @@ export class AuthController {
       console.log(req.body);
 
       const loginUserUseCase = new LoginUserUseCase();
-      const user = await loginUserUseCase.loginUser(email, password);
+      const user = await loginUserUseCase.execute(email, password);
 
-      const token = jwt.sign(user.toString(), process.env.JWT_SECRET, {
-        expiresIn: '1h',
+      const token = jwt.sign(user, process.env.JWT_SECRET, {
+        expiresIn: "1h",
       });
       return res
         .status(200)

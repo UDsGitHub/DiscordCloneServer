@@ -18,8 +18,8 @@ export class DmUser {
     this.messageList = messageList;
   }
 
-  toString() {
-    const messageList = this.messageList.map((message) => message.toString());
+  toJSON() {
+    const messageList = this.messageList.map((message) => message.toJSON());
     return {
       userId: this.userId,
       displayName: this.displayName,

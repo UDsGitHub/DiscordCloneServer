@@ -1,12 +1,18 @@
 import { DmUser } from "../businessObject/DmUser.js";
 import { Message } from "../businessObject/Message.js";
 import { UserService } from "../service/interface/UserService.js";
+import { BaseUseCase } from "./BaseUseCase.js";
 
-export class GetDmUsersUseCase {
+type Response = Record<string, Record<string, any>>;
+
+export class GetDmUsersUseCase extends BaseUseCase<
+  [string],
+  Promise<Response>,
+  Response
+> {
   #userService = new UserService();
-  constructor() {}
 
-  async getDmUsers(userId: string): Promise<Record<string, DmUser>> {
+  async handle(userId: string): Promise<Response> {
     /** // TODO: 
     optimize this by getting only the userids and profile pictures
     only get message log for first dmuser in table
@@ -14,7 +20,7 @@ export class GetDmUsersUseCase {
 
     const dmUsersResponse = await this.#userService.getDmUsers(userId);
 
-    const dmUsersResult: Record<string, DmUser> = {};
+    const dmUsersResult: Record<string, any> = {};
     for (const user of dmUsersResponse) {
       if (!dmUsersResult[user.to_id]) {
         const dmUser = new DmUser(user.to_id, user.display_name, "", [
@@ -35,10 +41,14 @@ export class GetDmUsersUseCase {
           { userId: user.from_id, displayName: user.display_name },
           undefined
         );
-        dmUsersResult[user["to_id"]].messageList.push(message);
+        dmUsersResult[user.to_id].messageList.push(message);
       }
     }
 
-    return dmUsersResult;
+    const output = Object.entries(dmUsersResult).reduce(
+      (acc, [key, val]) => ({ ...acc, [key]: val.toJSON() }),
+      {}
+    );
+    return output;
   }
 }

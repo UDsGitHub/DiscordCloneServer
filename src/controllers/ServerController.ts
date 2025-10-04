@@ -15,7 +15,7 @@ export class ServerController {
   async getServers(req: VerifyTokenRequest, res: Response) {
     try {
       const getServersUseCase = new GetServersUseCase();
-      const servers = await getServersUseCase.getServers();
+      const servers = await getServersUseCase.execute();
 
       res.status(200).json(servers);
     } catch (error) {
@@ -28,9 +28,9 @@ export class ServerController {
     try {
       const channelId = req.params.id;
       const getChannelInfoUseCase = new GetChannelInfoUseCase();
-      const channelInfo = await getChannelInfoUseCase.getChannelInfo(channelId);
+      const channelInfo = await getChannelInfoUseCase.execute(channelId);
 
-      return res.status(200).json(channelInfo.toString());
+      return res.status(200).json(channelInfo);
     } catch (error) {
       console.log(error);
       res.status(500).json({ message: "Internal server error" });
@@ -51,7 +51,7 @@ export class ServerController {
       }
 
       const createServerUseCase = new CreateServerUseCase();
-      const responseData = await createServerUseCase.createServer({
+      const responseData = await createServerUseCase.execute({
         userId: user.id,
         serverName,
         displayImagePath: imagePath,
