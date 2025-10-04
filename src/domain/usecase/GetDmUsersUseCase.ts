@@ -27,7 +27,7 @@ export class GetDmUsersUseCase extends BaseUseCase<
           new Message(
             user.id,
             user.message_content,
-            new Date(user.created_at),
+            new Date(user.time_stamp),
             { userId: user.from_id, displayName: user.display_name },
             undefined
           ),
@@ -37,7 +37,7 @@ export class GetDmUsersUseCase extends BaseUseCase<
         const message = new Message(
           user.id,
           user.message_content,
-          new Date(user.created_at),
+          new Date(user.time_stamp),
           { userId: user.from_id, displayName: user.display_name },
           undefined
         );
