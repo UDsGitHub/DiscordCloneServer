@@ -1,5 +1,5 @@
 import { AppUser } from "../../businessObject/AppUser.js";
-import { DefaultQueryObjectResult } from "../../usecase/index.js";
+import { DefaultQueryObjectResult } from "../../useCase/index.js";
 
 export interface IUserService {
   createUserFromQueryResult(row: DefaultQueryObjectResult): AppUser;

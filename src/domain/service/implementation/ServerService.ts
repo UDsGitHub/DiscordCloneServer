@@ -1,6 +1,6 @@
 import pool from "../../../lib/database/index.js";
 import { ChannelType, ServerRole } from "../../businessObject/ServerChannel.js";
-import { DefaultQueryObjectResult } from "../../usecase/index.js";
+import { DefaultQueryObjectResult } from "../../useCase/index.js";
 import { IServerService } from "../interface/IServerService.js";
 import { v4 as uuidv4 } from "uuid";
 

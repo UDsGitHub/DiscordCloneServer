@@ -1,9 +1,9 @@
 import { Response } from "express";
 import { UserService } from "../domain/service/interface/UserService.js";
 import { VerifyTokenRequest } from "../lib/middleware/auth.js";
-import { GetDmUsersUseCase } from "../domain/usecase/GetDmUsersUseCase.js";
-import { SendFriendRequestUseCase } from "../domain/usecase/SendFriendRequestUseCase.js";
-import { GetFriendRequestsUseCase } from "../domain/usecase/GetFriendRequestsUseCase.js";
+import { GetDmUsersUseCase } from "../domain/useCase/GetDmUsersUseCase.js";
+import { SendFriendRequestUseCase } from "../domain/useCase/SendFriendRequestUseCase.js";
+import { GetFriendRequestsUseCase } from "../domain/useCase/GetFriendRequestsUseCase.js";
 
 export class UserController {
   #userService = new UserService();

@@ -1,10 +1,10 @@
 import pool from "../lib/database/index.js";
 import { config } from "../lib/config/index.js";
-import { GetServersUseCase } from "../domain/usecase/GetServersUseCase.js";
+import { GetServersUseCase } from "../domain/useCase/GetServersUseCase.js";
 import { Response } from "express";
-import { GetChannelInfoUseCase } from "../domain/usecase/GetChannelInfoUseCase.js";
+import { GetChannelInfoUseCase } from "../domain/useCase/GetChannelInfoUseCase.js";
 import { VerifyTokenRequest } from "../lib/middleware/auth.js";
-import { CreateServerUseCase } from "../domain/usecase/CreateServerUseCase.js";
+import { CreateServerUseCase } from "../domain/useCase/CreateServerUseCase.js";
 import { ServerService } from "../domain/service/implementation/ServerService.js";
 
 export class ServerController {

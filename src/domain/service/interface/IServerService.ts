@@ -1,5 +1,5 @@
 import { ChannelType, ServerRole } from "../../businessObject/ServerChannel.js";
-import { DefaultQueryObjectResult } from "../../usecase/index.js";
+import { DefaultQueryObjectResult } from "../../useCase/index.js";
 
 export interface IServerService {
   getChannelMessage(

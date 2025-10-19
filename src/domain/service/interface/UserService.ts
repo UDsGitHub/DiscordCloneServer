@@ -1,6 +1,6 @@
 import pool from "../../../lib/database/index.js";
 import { AppUser } from "../../businessObject/AppUser.js";
-import { DefaultQueryObjectResult } from "../../usecase/index.js";
+import { DefaultQueryObjectResult } from "../../useCase/index.js";
 import { IUserService } from "../implementation/IUserService.js";
 
 export class UserService implements IUserService {

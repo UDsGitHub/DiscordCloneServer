@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
-import { RegisterUserUseCase } from "../domain/usecase/RegisterUserUseCase.js";
-import { LoginUserUseCase } from "../domain/usecase/LoginUserUseCase.js";
+import { RegisterUserUseCase } from "../domain/useCase/RegisterUserUseCase.js";
+import { LoginUserUseCase } from "../domain/useCase/LoginUserUseCase.js";
 
 export class AuthController {
   constructor() {}

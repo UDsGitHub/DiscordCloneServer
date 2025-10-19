@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { AppUser } from "../../domain/businessObject/AppUser.js";
 import { Request, Response, NextFunction } from "express";
-import { DefaultQueryObjectResult } from "../../domain/usecase/index.js";
+import { DefaultQueryObjectResult } from "../../domain/useCase/index.js";
 
 export type VerifyTokenRequest = Request & {
   user?: AppUser;
