@@ -10,15 +10,15 @@ export class UserController {
 
   constructor() {}
 
-  async getUser(req: VerifyTokenRequest, res: Response) {
+  getUser = async (req: VerifyTokenRequest, res: Response) => {
     try {
       return res.status(200).json(req.user.toJSON());
     } catch (error) {
       return res.status(500).send(error.message);
     }
-  }
+  };
 
-  async getDmUsers(req: VerifyTokenRequest, res: Response) {
+  getDmUsers = async (req: VerifyTokenRequest, res: Response) => {
     try {
       const user = req.user;
       const getDmUsersUseCase = new GetDmUsersUseCase();
@@ -28,9 +28,9 @@ export class UserController {
     } catch (error) {
       return res.status(500).send(error.message);
     }
-  }
+  };
 
-  async sendMessageToUser(req: VerifyTokenRequest, res: Response) {
+  sendMessageToUser = async (req: VerifyTokenRequest, res: Response) => {
     try {
       const user = req.user;
       const { toUserId, message } = req.body;
@@ -41,9 +41,9 @@ export class UserController {
     } catch (error) {
       return res.status(500).send(error.message);
     }
-  }
+  };
 
-  async sendFriendRequest(req: VerifyTokenRequest, res: Response) {
+  sendFriendRequest = async (req: VerifyTokenRequest, res: Response) => {
     try {
       const user = req.user;
       const { toUsername } = req.body;
@@ -58,9 +58,9 @@ export class UserController {
     } catch (error) {
       return res.status(error.cause.status ?? 500).send(error.message);
     }
-  }
+  };
 
-  async getFriendRequests(req: VerifyTokenRequest, res: Response) {
+  getFriendRequests = async (req: VerifyTokenRequest, res: Response) => {
     try {
       const user = req.user;
 
@@ -73,9 +73,9 @@ export class UserController {
     } catch (error) {
       return res.status(500).send(error.message);
     }
-  }
+  };
 
-  async addFriend(req: VerifyTokenRequest, res: Response) {
+  addFriend = async (req: VerifyTokenRequest, res: Response) => {
     try {
       const user = req.user;
       const { friendId } = req.body;
@@ -96,9 +96,9 @@ export class UserController {
     } catch (error) {
       return res.status(500).send(error.message);
     }
-  }
+  };
 
-  async unFriend(req: VerifyTokenRequest, res: Response) {
+  unFriend = async (req: VerifyTokenRequest, res: Response) => {
     try {
       const user = req.user;
       const { friendId } = req.body;
@@ -109,9 +109,9 @@ export class UserController {
     } catch (error) {
       return res.status(500).send(error.message);
     }
-  }
+  };
 
-  async ignoreFriendRequest(req: VerifyTokenRequest, res: Response) {
+  ignoreFriendRequest = async (req: VerifyTokenRequest, res: Response) => {
     try {
       const user = req.user;
       const { friendId } = req.body;
@@ -129,7 +129,7 @@ export class UserController {
       console.log(error);
       return res.status(500).send(error.message);
     }
-  }
+  };
 
   getFriends = async (req: VerifyTokenRequest, res: Response) => {
     try {

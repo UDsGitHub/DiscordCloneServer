@@ -4,14 +4,14 @@ export type MessageAuthor = {
 };
 
 export class Message {
-  id: Number;
+  id: number;
   content: string;
   timestamp: Date;
   author: MessageAuthor;
   refMessage: Message | undefined;
 
   constructor(
-    id: Number,
+    id: number,
     content: string,
     timestamp: Date,
     author: MessageAuthor,

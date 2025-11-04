@@ -2,7 +2,7 @@ import { Message, MessageAuthor } from "./Message.js";
 
 export class ChannelMessage extends Message {
   constructor(
-    id: Number,
+    id: number,
     content: string,
     timestamp: Date,
     author: MessageAuthor,

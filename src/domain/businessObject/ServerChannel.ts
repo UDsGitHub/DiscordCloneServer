@@ -17,7 +17,7 @@ export class ServerChannel {
   type: ChannelType;
   currentMessage: string;
   messages: Message[];
-  categoryId?: Number;
+  categoryId?: number;
 
   constructor(
     id: string,
@@ -26,7 +26,7 @@ export class ServerChannel {
     type: ChannelType,
     currentMessage: string,
     messages: Message[],
-    categoryId?: Number
+    categoryId?: number
   ) {
     this.id = id;
     this.name = name;

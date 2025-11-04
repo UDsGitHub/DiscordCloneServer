@@ -6,7 +6,7 @@ import { LoginUserUseCase } from "../domain/useCase/LoginUserUseCase.js";
 export class AuthController {
   constructor() {}
 
-  async register(req: Request, res: Response) {
+  register = async (req: Request, res: Response) => {
     try {
       const { email, displayName, username, password, birthdate } = req.body;
       const registerUserUseCase = new RegisterUserUseCase();
@@ -34,9 +34,9 @@ export class AuthController {
       console.log(error);
       res.status(error.cause.status ?? 500).send(error.message);
     }
-  }
+  };
 
-  async login(req: Request, res: Response) {
+  login = async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
       console.log(req.body);
@@ -60,5 +60,5 @@ export class AuthController {
       console.log(error);
       return res.status(error.cause?.status ?? 500).send(error.message);
     }
-  }
+  };
 }

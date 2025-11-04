@@ -12,7 +12,7 @@ export class ServerController {
 
   constructor() {}
 
-  async getServers(req: VerifyTokenRequest, res: Response) {
+  getServers = async (req: VerifyTokenRequest, res: Response) => {
     try {
       const getServersUseCase = new GetServersUseCase();
       const servers = await getServersUseCase.execute();
@@ -22,9 +22,9 @@ export class ServerController {
       console.log(error);
       res.status(500).json({ message: "Internal server error" });
     }
-  }
+  };
 
-  async getChannelInfo(req: VerifyTokenRequest, res: Response) {
+  getChannelInfo = async (req: VerifyTokenRequest, res: Response) => {
     try {
       const channelId = req.params.id;
       const getChannelInfoUseCase = new GetChannelInfoUseCase();
@@ -35,9 +35,9 @@ export class ServerController {
       console.log(error);
       res.status(500).json({ message: "Internal server error" });
     }
-  }
+  };
 
-  async createServer(req: VerifyTokenRequest, res: Response) {
+  createServer = async (req: VerifyTokenRequest, res: Response) => {
     try {
       const user = req.user;
       const { serverName } = req.body;
@@ -62,9 +62,9 @@ export class ServerController {
       console.log(error);
       res.status(500).json({ message: "Internal server error" });
     }
-  }
+  };
 
-  async sendChannelMessage(req: VerifyTokenRequest, res: Response) {
+  sendChannelMessage = async (req: VerifyTokenRequest, res: Response) => {
     try {
       const {
         channelId,
@@ -87,9 +87,9 @@ export class ServerController {
       console.log(error);
       res.status(500).json({ message: "Internal server error" });
     }
-  }
+  };
 
-  async createChannel(req: VerifyTokenRequest, res: Response) {
+  createChannel = async (req: VerifyTokenRequest, res: Response) => {
     try {
       const { name, type, serverId, categoryId } = req.body;
 
@@ -105,9 +105,9 @@ export class ServerController {
       console.log(error);
       res.status(500).json({ message: "Internal server error" });
     }
-  }
+  };
 
-  async deleteChannel(req: VerifyTokenRequest, res: Response) {
+  deleteChannel = async (req: VerifyTokenRequest, res: Response) => {
     try {
       const channelId = req.params.id;
 
@@ -118,5 +118,5 @@ export class ServerController {
       console.log(error);
       res.status(500).json({ message: "Internal server error" });
     }
-  }
+  };
 }

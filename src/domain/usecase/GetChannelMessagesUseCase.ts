@@ -6,7 +6,7 @@ export class GetChannelMessagesUseCase {
 
   constructor() {}
 
-  async getChannelMessages(channelId: string, messageIds: Number[]) {
+  async getChannelMessages(channelId: string, messageIds: number[]) {
     const channelMessages: Message[] = [];
     for (const messageId of messageIds) {
       const channelMessage = await this.serverService.getChannelMessage(
@@ -39,7 +39,7 @@ export class GetChannelMessagesUseCase {
 
   async #getRefMessage(
     channelId: string,
-    refMessageId?: Number
+    refMessageId?: number
   ): Promise<Message | undefined> {
     if (!refMessageId) return undefined;
 

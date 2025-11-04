@@ -22,20 +22,20 @@ export class GetServerContentUseCase {
     const serverChannels = channels.filter((channel) => !channel.categoryId);
 
     // Update the first text channel with its messages for faster load times
-    const textChannels = channels.filter((channel) => channel.type === 0);
-    if (channels.length && textChannels.length) {
-      const firstTextChannel = textChannels[0];
-      const updatedFirstChannel = await this.#updateFirstChannel(
-        firstTextChannel
-      );
+    // const textChannels = channels.filter((channel) => channel.type === 0);
+    // if (channels.length && textChannels.length) {
+    //   const firstTextChannel = textChannels[0];
+    //   const updatedFirstChannel = await this.#updateFirstChannel(
+    //     firstTextChannel
+    //   );
 
-      channels = channels.map((channel) => {
-        if (channel.id === firstTextChannel.id) {
-          return updatedFirstChannel;
-        }
-        return channel;
-      });
-    }
+    //   channels = channels.map((channel) => {
+    //     if (channel.id === firstTextChannel.id) {
+    //       return updatedFirstChannel;
+    //     }
+    //     return channel;
+    //   });
+    // }
 
     return new Server(
       serverId,

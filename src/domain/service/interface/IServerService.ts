@@ -4,7 +4,7 @@ import { DefaultQueryObjectResult } from "../../useCase/index.js";
 export interface IServerService {
   getChannelMessage(
     channelId: string,
-    messageIds: Number
+    messageIds: number
   ): Promise<DefaultQueryObjectResult | undefined>;
 
   getAllServers(): Promise<DefaultQueryObjectResult[]>;
@@ -15,7 +15,7 @@ export interface IServerService {
 
   getServerMembers(serverId: string): Promise<DefaultQueryObjectResult[]>;
 
-  getChannelMessageIds(channelId: string): Promise<Number[]>;
+  getChannelMessageIds(channelId: string): Promise<number[]>;
 
   getChannelInfo(
     channelId: string
@@ -23,13 +23,13 @@ export interface IServerService {
 
   createServer(serverName: string, displayImagePath?: string): Promise<string>;
 
-  createServerCategory(serverId: string, categoryName: string): Promise<Number>;
+  createServerCategory(serverId: string, categoryName: string): Promise<number>;
 
   createServerChannel(
     serverId: string,
     channelName: string,
     channelType: ChannelType,
-    categoryId?: Number
+    categoryId?: number
   ): Promise<void>;
 
   addServerMemeber(
@@ -43,8 +43,8 @@ export interface IServerService {
     channelId: string,
     content: string,
     timeStamp: string,
-    refMessageId?: Number
-  ): Promise<void>;
+    refMessageId?: number
+  ): Promise<number>;
 
   deleteChannel(channelId: string): Promise<void>;
 }

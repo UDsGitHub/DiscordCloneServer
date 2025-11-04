@@ -9,7 +9,7 @@ export class ServerService implements IServerService {
 
   async getChannelMessage(
     channelId: string,
-    messageId: Number
+    messageId: number
   ): Promise<DefaultQueryObjectResult | undefined> {
     const queryResult = await pool.query(
       `SELECT cm.id, cm.message_content, cm.ref_message_id, cm.time_stamp, u.id as user_id, u.username, u.display_name
@@ -60,7 +60,7 @@ export class ServerService implements IServerService {
     return queryResult.rows ?? [];
   }
 
-  async getChannelMessageIds(channelId: string): Promise<Number[]> {
+  async getChannelMessageIds(channelId: string): Promise<number[]> {
     const queryResult = await pool.query(
       `SELECT id 
         FROM channel_messages
@@ -97,7 +97,7 @@ export class ServerService implements IServerService {
   async createServerCategory(
     serverId: string,
     categoryName: string
-  ): Promise<Number> {
+  ): Promise<number> {
     const queryResult = await pool.query(
       `INSERT INTO categories(server_id, category_name)
         VALUES ($1, $2) RETURNING id;`,
@@ -111,7 +111,7 @@ export class ServerService implements IServerService {
     serverId: string,
     channelName: string,
     channelType: ChannelType,
-    categoryId?: Number
+    categoryId?: number
   ): Promise<void> {
     await pool.query(
       `INSERT INTO channels(id, server_id, channel_name, channel_type, category_id)
@@ -137,13 +137,15 @@ export class ServerService implements IServerService {
     channelId: string,
     content: string,
     timeStamp: string,
-    refMessageId?: Number
-  ): Promise<void> {
-    await pool.query(
+    refMessageId?: number
+  ): Promise<number> {
+    const id = await pool.query(
       `INSERT INTO channel_messages(channel_id, from_id, ref_message_id, message_content, time_stamp)
-          VALUES($1, $2, $3, $4, $5);`,
+          VALUES($1, $2, $3, $4, $5) RETURNING id;`,
       [channelId, userId, refMessageId, content, timeStamp]
     );
+
+    return id.rows[0];
   }
 
   async deleteChannel(channelId: string): Promise<void> {

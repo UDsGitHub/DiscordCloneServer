@@ -1,11 +1,11 @@
 import { ServerChannel } from "./ServerChannel.js";
 
 export class ChannelCategory {
-  id: Number;
+  id: number;
   name: string;
   channels: ServerChannel[];
 
-  constructor(id: Number, name: string, channels: ServerChannel[]) {
+  constructor(id: number, name: string, channels: ServerChannel[]) {
     this.id = id;
     this.name = name;
     this.channels = channels;
