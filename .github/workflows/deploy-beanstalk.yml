@@ -26,6 +26,7 @@ jobs:
         run: |
           npm ci
           # if you have a build script (adjust if not needed)
+          ls
           if npm run | grep -q " build"; then
             npm run build
           fi
