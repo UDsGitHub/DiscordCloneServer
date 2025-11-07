@@ -26,9 +26,11 @@ jobs:
         run: |
           npm ci
           # if you have a build script (adjust if not needed)
-          cd src/domain
+          cd src/domain/usecase
           ls
-          cd ../../
+          cd ../useCase
+          ls
+          cd ../../../
           if npm run | grep -q " build"; then
             npm run build
           fi
