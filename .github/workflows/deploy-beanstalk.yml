@@ -25,15 +25,7 @@ jobs:
         working-directory: ${{ env.SERVER_DIR }}
         run: |
           npm ci
-          # if you have a build script (adjust if not needed)
-          cd src/domain/usecase
-          ls
-          cd ../useCase
-          ls
-          cd ../../../
-          if npm run | grep -q " build"; then
-            npm run build
-          fi
+          npm run build
 
       - name: Prepare artifact (zip server folder)
         run: |
