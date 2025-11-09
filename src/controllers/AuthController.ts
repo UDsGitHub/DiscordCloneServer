@@ -32,7 +32,7 @@ export class AuthController {
         .json(responseData);
     } catch (error) {
       console.log(error);
-      res.status(error.cause.status ?? 500).send(error.message);
+      res.status(error.cause?.status ?? 500).send(error.message);
     }
   };
 

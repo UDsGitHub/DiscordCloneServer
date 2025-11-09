@@ -56,7 +56,7 @@ export class UserController {
 
       return res.status(200).json({ message: responseMessage });
     } catch (error) {
-      return res.status(error.cause.status ?? 500).send(error.message);
+      return res.status(error.cause?.status ?? 500).send(error.message);
     }
   };
 
