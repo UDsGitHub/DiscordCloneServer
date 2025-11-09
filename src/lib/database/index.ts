@@ -1,6 +1,7 @@
 import pg from "pg";
 import dotenv from "dotenv";
 import fs from "fs";
+import path from "path";
 
 dotenv.config();
 
@@ -12,7 +13,7 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
   port: parseInt(process.env.DB_PORT) || 5432,
   ssl: {
-    ca: fs.readFileSync("./us-east-1-bundle.pem").toString(),
+    ca: fs.readFileSync(path.resolve(__dirname, "./us-east-1-bundle.pem")).toString(),
     rejectUnauthorized: process.env.NODE_ENV === "production",
   },
 });
