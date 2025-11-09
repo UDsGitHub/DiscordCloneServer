@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import pg from "pg";
 import dotenv from "dotenv";
 import https from "https";
 
@@ -21,6 +21,7 @@ function getRdsCaBundle(): Promise<string> {
 
 export async function createPool() {
   const ca = await getRdsCaBundle();
+  const { Pool } = pg;
 
   return new Pool({
     user: process.env.DB_USER,
