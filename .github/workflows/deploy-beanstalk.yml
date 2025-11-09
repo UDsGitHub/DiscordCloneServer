@@ -26,6 +26,9 @@ jobs:
         run: |
           npm ci
           npm run build
+          cd dist/lib/database
+          ls
+          cd ../../../
 
       - name: Prepare artifact (zip server folder)
         run: |
