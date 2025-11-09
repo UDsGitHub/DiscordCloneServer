@@ -1,6 +1,7 @@
 import pg from "pg";
 import dotenv from "dotenv";
 import https from "https";
+import { config as AppConfig } from "../config/index.js";
 
 dotenv.config();
 
@@ -31,9 +32,9 @@ export async function createPool() {
     port: parseInt(process.env.DB_PORT) || 5432,
   };
 
-  if (process.env.NODE_ENV === "production") {
+  if (AppConfig.isProd) {
     config["ssl"] = {
-      rejectUnauthorized: process.env.NODE_ENV === "production",
+      rejectUnauthorized: true,
       ca,
     };
   } else {

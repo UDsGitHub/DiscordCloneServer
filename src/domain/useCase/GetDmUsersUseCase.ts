@@ -13,11 +13,6 @@ export class GetDmUsersUseCase extends BaseUseCase<
   #userService = new UserService();
 
   async handle(userId: string): Promise<Response> {
-    /** // TODO: 
-    optimize this by getting only the userids and profile pictures
-    only get message log for first dmuser in table
-    later on get messages when user clicks on the dmuser **/
-
     const dmUsersResponse = await this.#userService.getDmUsers(userId);
 
     const dmUsersResult: Record<string, any> = {};

@@ -6,6 +6,7 @@ import { GetChannelInfoUseCase } from "../domain/useCase/GetChannelInfoUseCase.j
 import { VerifyTokenRequest } from "../lib/middleware/auth.js";
 import { CreateServerUseCase } from "../domain/useCase/CreateServerUseCase.js";
 import { ServerService } from "../domain/service/implementation/ServerService.js";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 export class ServerController {
   #serverService = new ServerService();
@@ -45,9 +46,21 @@ export class ServerController {
 
       let imagePath = undefined;
       if (serverDisplayPicture) {
-        imagePath = `${req.protocol}://${req.get("host")}/${config.uploadPath}${
-          serverDisplayPicture.filename
-        }`;
+        const s3Client = new S3Client({ region: process.env.S3_REGION });
+        if (config.isProd) {
+          imagePath = `${config.uploadPath}/${user.id}/servers/${serverDisplayPicture.filename}`;
+          const command = new PutObjectCommand({
+            Bucket: process.env.S3_BUCKET,
+            Key: imagePath,
+            Body: serverDisplayPicture.buffer,
+            ContentType: serverDisplayPicture.mimetype,
+          });
+          await s3Client.send(command);
+        } else {
+          imagePath = `${req.protocol}://${req.get("host")}/${
+            config.uploadPath
+          }/${user.id}/servers/${serverDisplayPicture.filename}`;
+        }
       }
 
       const createServerUseCase = new CreateServerUseCase();

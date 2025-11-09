@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import { RegisterUserUseCase } from "../domain/useCase/RegisterUserUseCase.js";
 import { LoginUserUseCase } from "../domain/useCase/LoginUserUseCase.js";
+import { config } from "../lib/config/index.js";
 
 export class AuthController {
   constructor() {}
@@ -19,7 +20,7 @@ export class AuthController {
       });
 
       const token = jwt.sign(responseData.user, process.env.JWT_SECRET, {
-        expiresIn: "1h",
+        expiresIn: config.expiresIn,
       });
       return res
         .status(201)
@@ -45,7 +46,7 @@ export class AuthController {
       const user = await loginUserUseCase.execute(email, password);
 
       const token = jwt.sign(user, process.env.JWT_SECRET, {
-        expiresIn: "1h",
+        expiresIn: config.expiresIn,
       });
       return res
         .status(200)

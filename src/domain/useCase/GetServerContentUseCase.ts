@@ -1,9 +1,12 @@
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { config } from "../../lib/config/index.js";
 import { ChannelCategory } from "../businessObject/ChannelCategory.js";
 import { Server } from "../businessObject/Server.js";
 import { ServerChannel } from "../businessObject/ServerChannel.js";
 import { ServerMember } from "../businessObject/ServerMember.js";
 import { ServerService } from "../service/implementation/ServerService.js";
 import { GetChannelMessagesUseCase } from "./GetChannelMessagesUseCase.js";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export class GetServerContentUseCase {
   #serverService = new ServerService();
@@ -14,38 +17,39 @@ export class GetServerContentUseCase {
   async getServerContent(
     serverId: string,
     serverName: string,
-    serverDisplayPicture: string
+    serverDisplayPicture: string | null
   ) {
     let channels = await this.#getChannels(serverId);
     const categories = await this.#getCategories(serverId, channels);
     const members = await this.#getMembers(serverId);
     const serverChannels = channels.filter((channel) => !channel.categoryId);
-
-    // Update the first text channel with its messages for faster load times
-    // const textChannels = channels.filter((channel) => channel.type === 0);
-    // if (channels.length && textChannels.length) {
-    //   const firstTextChannel = textChannels[0];
-    //   const updatedFirstChannel = await this.#updateFirstChannel(
-    //     firstTextChannel
-    //   );
-
-    //   channels = channels.map((channel) => {
-    //     if (channel.id === firstTextChannel.id) {
-    //       return updatedFirstChannel;
-    //     }
-    //     return channel;
-    //   });
-    // }
+    const displayPictureUrl = await this.#getDisplayPicture(
+      serverDisplayPicture
+    );
 
     return new Server(
       serverId,
       serverName,
-      serverDisplayPicture,
+      displayPictureUrl,
       serverChannels,
       categories[0].channels[0].id,
       categories,
       members
     );
+  }
+
+  async #getDisplayPicture(imagePath: string | null) {
+    if (!config.isProd || imagePath === null) return imagePath;
+
+    const s3Client = new S3Client({region: process.env.S3_REGION})
+    const command = new GetObjectCommand({
+      Bucket: process.env.S3_BUCKET,
+      Key: imagePath,
+    });
+    const signedUrl = await getSignedUrl(s3Client, command, {
+      expiresIn: config.expiresIn,
+    });
+    return signedUrl;
   }
 
   async #getCategories(serverId: string, channels: ServerChannel[]) {
@@ -83,7 +87,9 @@ export class GetServerContentUseCase {
   }
 
   async #getMembers(serverId: string) {
-    const membersResponse = await this.#serverService.getServerMembers(serverId);
+    const membersResponse = await this.#serverService.getServerMembers(
+      serverId
+    );
 
     return membersResponse.map(
       (member) =>

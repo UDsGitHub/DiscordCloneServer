@@ -10,27 +10,31 @@ type StorageFileFilterCallback = (
   destination: string
 ) => void;
 
-function getFileUploader(allowedTypes: string[]) {
-  // Configure storage
-  const storage = multer.diskStorage({
-    destination: (
-      req: Request,
-      file: Express.Multer.File,
-      cb: StorageFileFilterCallback
-    ) => {
-      cb(null, config.uploadPath); // Directory to save files
-    },
-    filename: (
-      req: Request,
-      file: Express.Multer.File,
-      cb: StorageFileFilterCallback
-    ) => {
-      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-      cb(null, uniqueSuffix + path.extname(file.originalname)); // Save with unique name
-    },
-  });
+const getStorage = () => {
+  if (config.isProd) {
+    return multer.memoryStorage();
+  } else {
+    return multer.diskStorage({
+      destination: (
+        req: Request,
+        file: Express.Multer.File,
+        cb: StorageFileFilterCallback
+      ) => {
+        cb(null, config.uploadPath);
+      },
+      filename: (
+        req: Request,
+        file: Express.Multer.File,
+        cb: StorageFileFilterCallback
+      ) => {
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
+      },
+    });
+  }
+};
 
-  // File filter for validation
+function getFileUploader(allowedTypes: string[]) {
   const fileFilter = (
     req: Request,
     file: Express.Multer.File,
@@ -44,7 +48,7 @@ function getFileUploader(allowedTypes: string[]) {
   };
 
   return multer({
-    storage,
+    storage: getStorage(),
     fileFilter,
     limits: { fileSize: MAX_IMAGE_FILE_SIZE },
   });
