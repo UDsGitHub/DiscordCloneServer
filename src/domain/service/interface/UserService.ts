@@ -183,12 +183,11 @@ export class UserService implements IUserService {
     password: string;
     birthdate: string;
   }): Promise<AppUser> {
-    const { id, ...rest } = request;
-    await pool.query(
+    const newUser = await pool.query(
       `INSERT INTO users(id, email, display_name, username, password, birthdate) values ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [Object.values(request)]
+      Object.values(request)
     );
 
-    return this.createUserFromQueryResult(this.getUserById(id));
+    return this.createUserFromQueryResult(newUser.rows[0]);
   }
 }

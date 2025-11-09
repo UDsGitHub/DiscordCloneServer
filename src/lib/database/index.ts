@@ -23,14 +23,24 @@ export async function createPool() {
   const ca = await getRdsCaBundle();
   const { Pool } = pg;
 
-  return new Pool({
+  const config = {
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
     database: process.env.DB_DATABASE,
     password: process.env.DB_PASSWORD,
     port: parseInt(process.env.DB_PORT) || 5432,
-    ssl: { rejectUnauthorized: process.env.NODE_ENV === "production", ca },
-  });
+  };
+
+  if (process.env.NODE_ENV === "production") {
+    config["ssl"] = {
+      rejectUnauthorized: process.env.NODE_ENV === "production",
+      ca,
+    };
+  } else {
+    config["ssl"] = false;
+  }
+
+  return new Pool(config);
 }
 
 const pool = await createPool();
