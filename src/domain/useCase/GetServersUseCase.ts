@@ -3,12 +3,16 @@ import { ServerService } from "../service/implementation/ServerService.js";
 import { BaseUseCase } from "./BaseUseCase.js";
 import { GetServerContentUseCase } from "./GetServerContentUseCase.js";
 
-export class GetServersUseCase extends BaseUseCase<[], Promise<Server[]>, Record<string, any>> {
+export class GetServersUseCase extends BaseUseCase<
+  [string],
+  Promise<Server[]>,
+  Record<string, any>
+> {
   #serverService = new ServerService();
   #getServerContentUseCase = new GetServerContentUseCase();
 
-  async handle(): Promise<Server[]> {
-    const allServers = await this.#serverService.getAllServers();
+  async handle(userId: string): Promise<Server[]> {
+    const allServers = await this.#serverService.getUserServers(userId);
 
     return await Promise.all(
       allServers.map(async (serverData) => {

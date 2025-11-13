@@ -46,12 +46,13 @@ export class UserController {
   sendFriendRequest = async (req: VerifyTokenRequest, res: Response) => {
     try {
       const user = req.user;
-      const { toUsername } = req.body;
+      const { toUsername, toUserId } = req.body;
 
       const sendFriendRequestUseCase = new SendFriendRequestUseCase();
       const responseMessage = await sendFriendRequestUseCase.execute(
         user.id,
-        toUsername
+        toUsername,
+        toUserId
       );
 
       return res.status(200).json({ message: responseMessage });
@@ -139,6 +140,21 @@ export class UserController {
 
       return res.status(200).json(friendUsers);
     } catch (error) {
+      return res.status(500).send(error.message);
+    }
+  };
+
+  sendServerInvite = async (req: VerifyTokenRequest, res: Response) => {
+    try {
+      const { serverId, userId } = req.body;
+
+      await this.#userService.sendServerInvite(serverId, userId);
+
+      return res
+        .status(200)
+        .json({ message: `Server Invite Sent to user: ${userId}!` });
+    } catch (error) {
+      console.log(error)
       return res.status(500).send(error.message);
     }
   };

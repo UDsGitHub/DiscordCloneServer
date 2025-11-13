@@ -16,7 +16,7 @@ export class ServerController {
   getServers = async (req: VerifyTokenRequest, res: Response) => {
     try {
       const getServersUseCase = new GetServersUseCase();
-      const servers = await getServersUseCase.execute();
+      const servers = await getServersUseCase.execute(req.user.id);
 
       res.status(200).json(servers);
     } catch (error) {

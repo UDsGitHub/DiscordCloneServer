@@ -2,17 +2,37 @@ import { UserService } from "../service/interface/UserService.js";
 import { BaseUseCase } from "./BaseUseCase.js";
 
 export class SendFriendRequestUseCase extends BaseUseCase<
-  [string, string],
+  [string, string | undefined, string | undefined],
   Promise<string>,
   string
 > {
   #userService = new UserService();
 
-  async handle(fromUserId: string, toUsername: string): Promise<string> {
+  async handle(
+    fromUserId: string,
+    toUsername?: string,
+    toUserId?: string
+  ): Promise<string> {
+    if (!toUsername && !toUserId) {
+      throw new Error("Please provide to-username or to-userid", {
+        cause: { status: 400 },
+      });
+    }
+
+    let friendUser = undefined;
     // check if user exists
-    const friendUser = await this.#userService.getUserByUsername(toUsername);
+    if (toUsername) {
+      friendUser = await this.#userService.getUserByUsername(toUsername);
+    } else {
+      friendUser = await this.#userService.getUserById(toUserId);
+    }
+
     if (!friendUser) {
-      throw new Error(`User with username: ${toUsername} does not exist`, {
+      const message = toUsername
+        ? `User with username: ${toUsername} does not exist`
+        : `User with userId: ${toUserId} does not exist`;
+
+      throw new Error(message, {
         cause: { status: 404 },
       });
     }

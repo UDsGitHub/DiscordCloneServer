@@ -21,9 +21,17 @@ export class ServerService implements IServerService {
     return queryResult.rows[0];
   }
 
-  async getAllServers(): Promise<DefaultQueryObjectResult[]> {
-    const queryResul = await pool.query(`SELECT * FROM servers s`);
+  async getUserServers(userId: string): Promise<DefaultQueryObjectResult[]> {
+    const queryResul = await pool.query(
+      `SELECT * FROM servers s INNER JOIN server_members sm ON sm.server_id = s.id WHERE sm.user_id = $1`,
+      [userId]
+    );
     return queryResul.rows;
+  }
+
+  async getAllServers(): Promise<DefaultQueryObjectResult[]> {
+    const queryResult = await pool.query(`SELECT * FROM servers`);
+    return queryResult.rows;
   }
 
   async getServerCategories(

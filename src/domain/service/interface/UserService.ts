@@ -1,5 +1,6 @@
 import pool from "../../../lib/database/index.js";
 import { AppUser } from "../../businessObject/AppUser.js";
+import { FriendUser } from "../../businessObject/FriendUser.js";
 import { DefaultQueryObjectResult } from "../../useCase/index.js";
 import { IUserService } from "../implementation/IUserService.js";
 
@@ -13,6 +14,20 @@ export class UserService implements IUserService {
       row.display_name,
       row.username,
       row.birthdate
+    );
+  }
+
+  #createFriendUserFromQueryResult(
+    row: DefaultQueryObjectResult,
+    serverInvites: string[]
+  ): FriendUser {
+    return new FriendUser(
+      row.id,
+      row.email,
+      row.display_name,
+      row.username,
+      row.birthdate,
+      serverInvites
     );
   }
 
@@ -158,7 +173,7 @@ export class UserService implements IUserService {
     );
   }
 
-  async getFriendUsers(userId: string): Promise<AppUser[]> {
+  async getFriendUsers(userId: string): Promise<FriendUser[]> {
     const friendsQuery = await pool.query(
       "SELECT friend_id FROM friends WHERE user_id = $1",
       [userId]
@@ -166,13 +181,38 @@ export class UserService implements IUserService {
 
     const friendUsers = [];
     for (const row of friendsQuery.rows) {
-      const friendUser = await this.getUserById(row.id);
+      const friendUser = await this.getUserById(row.friend_id);
+      const serverInvites = await this.#getServerInvites(row.friend_id);
       if (friendUser) {
-        friendUsers.push(this.createUserFromQueryResult(friendUser));
+        friendUsers.push(
+          this.#createFriendUserFromQueryResult(friendUser, serverInvites)
+        );
       }
     }
 
     return friendUsers;
+  }
+
+  async #getServerInvites(userId: string): Promise<string[]> {
+    const query = await pool.query(
+      "SELECT server_id from server_invites WHERE user_id = $1 AND is_expired = false",
+      [userId]
+    );
+    return query.rows.map(row => row.server_id);
+  }
+
+  async sendServerInvite(serverId: string, userId: string): Promise<void> {
+    await pool.query(
+      "INSERT INTO server_invites (server_id, user_id) VALUES ($1, $2)",
+      [serverId, userId]
+    );
+  }
+
+  async deleteServerInvite(serverId: string, userId: string): Promise<void> {
+    await pool.query(
+      "DELETE FROM server_invites WHERE server_id = $1 AND user_id = $2)",
+      [serverId, userId]
+    );
   }
 
   async createUser(request: {

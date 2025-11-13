@@ -7,6 +7,8 @@ export interface IServerService {
     messageIds: number
   ): Promise<DefaultQueryObjectResult | undefined>;
 
+  getUserServers(userId: string): Promise<DefaultQueryObjectResult[]>;
+
   getAllServers(): Promise<DefaultQueryObjectResult[]>;
 
   getServerCategories(serverId: string): Promise<DefaultQueryObjectResult[]>;
