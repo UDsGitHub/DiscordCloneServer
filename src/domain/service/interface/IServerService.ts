@@ -49,4 +49,15 @@ export interface IServerService {
   ): Promise<number>;
 
   deleteChannel(channelId: string): Promise<void>;
+
+  getServerInvite(
+    serverId: string,
+    inviteCode: string
+  ): Promise<DefaultQueryObjectResult>;
+
+  updateServerInviteCode(
+    serverId: string,
+    inviteCode: string,
+    version: number
+  ): Promise<string>;
 }

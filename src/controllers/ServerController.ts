@@ -3,10 +3,13 @@ import { config } from "../lib/config/index.js";
 import { GetServersUseCase } from "../domain/useCase/GetServersUseCase.js";
 import { Response } from "express";
 import { GetChannelInfoUseCase } from "../domain/useCase/GetChannelInfoUseCase.js";
-import { VerifyTokenRequest } from "../lib/middleware/auth.js";
 import { CreateServerUseCase } from "../domain/useCase/CreateServerUseCase.js";
+import { GetServerInviteCodeUseCase } from "../domain/useCase/GetServerInviteCodeUseCase.js";
 import { ServerService } from "../domain/service/implementation/ServerService.js";
+import { VerifyTokenRequest } from "../lib/middleware/auth.js";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetServerForInviteCodeUseCase } from "../domain/useCase/GetServerForInviteCodeUseCase.js";
+import { ServerRole } from "../domain/businessObject/ServerChannel.js";
 
 export class ServerController {
   #serverService = new ServerService();
@@ -127,6 +130,51 @@ export class ServerController {
       await pool.query(`DELETE FROM channels WHERE id = $1`, [channelId]);
 
       res.status(200).json({ message: "successfully deleted channel" });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  };
+
+  getServerInviteCode = async (req: VerifyTokenRequest, res: Response) => {
+    try {
+      const useCase = new GetServerInviteCodeUseCase();
+      const serverId = req.params.id;
+
+      const inviteCode = await useCase.execute(serverId);
+
+      res.status(200).json({ inviteCode });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  };
+
+  getServerForInviteCode = async (req: VerifyTokenRequest, res: Response) => {
+    try {
+      const useCase = new GetServerForInviteCodeUseCase();
+      const inviteCode = req.params.id;
+
+      const serverPreviewInfo = await useCase.execute(inviteCode);
+
+      res.status(200).json(serverPreviewInfo);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  };
+
+  addServerMember = async (req: VerifyTokenRequest, res: Response) => {
+    try {
+      const { userId, serverId } = req.body;
+
+      const serverPreviewInfo = await this.#serverService.addServerMemeber(
+        serverId,
+        userId,
+        ServerRole.MEMBER
+      );
+
+      res.status(200).json(serverPreviewInfo);
     } catch (error) {
       console.log(error);
       res.status(500).json({ message: "Internal server error" });

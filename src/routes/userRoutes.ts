@@ -13,6 +13,6 @@ router.post("/sendFriendRequest", controller.sendFriendRequest);
 router.delete("/ignoreFriendRequest", controller.ignoreFriendRequest);
 router.post("/addFriend", controller.addFriend);
 router.delete("/unFriend", controller.unFriend);
-router.post("/sendServerInvite", controller.sendServerInvite);
+router.post("/sendServerInvite/:id", controller.sendServerInvite);
 
 export default router;

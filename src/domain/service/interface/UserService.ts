@@ -182,30 +182,14 @@ export class UserService implements IUserService {
     const friendUsers = [];
     for (const row of friendsQuery.rows) {
       const friendUser = await this.getUserById(row.friend_id);
-      const serverInvites = await this.#getServerInvites(row.friend_id);
       if (friendUser) {
         friendUsers.push(
-          this.#createFriendUserFromQueryResult(friendUser, serverInvites)
+          this.createUserFromQueryResult(friendUser)
         );
       }
     }
 
     return friendUsers;
-  }
-
-  async #getServerInvites(userId: string): Promise<string[]> {
-    const query = await pool.query(
-      "SELECT server_id from server_invites WHERE user_id = $1 AND is_expired = false",
-      [userId]
-    );
-    return query.rows.map(row => row.server_id);
-  }
-
-  async sendServerInvite(serverId: string, userId: string): Promise<void> {
-    await pool.query(
-      "INSERT INTO server_invites (server_id, user_id) VALUES ($1, $2)",
-      [serverId, userId]
-    );
   }
 
   async deleteServerInvite(serverId: string, userId: string): Promise<void> {

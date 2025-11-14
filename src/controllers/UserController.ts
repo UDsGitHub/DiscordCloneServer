@@ -146,13 +146,15 @@ export class UserController {
 
   sendServerInvite = async (req: VerifyTokenRequest, res: Response) => {
     try {
-      const { serverId, userId } = req.body;
+      const toUserId = req.params.id
+      const { inviteLink } = req.body;
 
-      await this.#userService.sendServerInvite(serverId, userId);
+      console.log('the body of the rec: ', req.body)
+      await this.#userService.insertMessage(req.user.id, toUserId, inviteLink);
 
       return res
         .status(200)
-        .json({ message: `Server Invite Sent to user: ${userId}!` });
+        .json({ message: `Server Invite Sent to user: ${toUserId}!` });
     } catch (error) {
       console.log(error)
       return res.status(500).send(error.message);

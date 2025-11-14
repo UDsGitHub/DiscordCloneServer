@@ -3,6 +3,7 @@ import { ChannelType, ServerRole } from "../../businessObject/ServerChannel.js";
 import { DefaultQueryObjectResult } from "../../useCase/index.js";
 import { IServerService } from "../interface/IServerService.js";
 import { v4 as uuidv4 } from "uuid";
+import { ServerPreview } from "../../useCase/GetServerForInviteCodeUseCase.js";
 
 export class ServerService implements IServerService {
   constructor() {}
@@ -133,11 +134,22 @@ export class ServerService implements IServerService {
     userId: string,
     role: ServerRole
   ): Promise<void> {
+    if (this.#alreadyInServer(serverId, userId)) return;
+    
     await pool.query(
       `INSERT INTO server_members(server_id, user_id, role)
           VALUES($1, $2, $3);`,
       [serverId, userId, role]
     );
+  }
+
+  async #alreadyInServer(serverId: string, userId: string) {
+    const query = await pool.query(
+      'SELECT * FROM server_members WHERE server_id = $1 AND user_id = $2',
+      [serverId, userId]
+    )
+    
+    return query.rowCount > 0
   }
 
   async addChannelMessage(
@@ -158,5 +170,70 @@ export class ServerService implements IServerService {
 
   async deleteChannel(channelId: string): Promise<void> {
     await pool.query(`DELETE FROM channels WHERE id = $1`, [channelId]);
+  }
+
+  async getServerInvite(
+    serverId: string,
+    inviteCode: string
+  ): Promise<DefaultQueryObjectResult> {
+    const query = await pool.query(
+      "SELECT * FROM server_invites WHERE server_id = $1 and invite_code = $2",
+      [serverId, inviteCode]
+    );
+
+    if (!query.rowCount) {
+      const insertQuery = await pool.query(
+        "INSERT INTO server_invites (server_id, invite_code) VALUES($1, $2) RETURNING *",
+        [serverId, inviteCode]
+      );
+      return insertQuery.rows[0];
+    } else {
+      return query.rows[0];
+    }
+  }
+
+  async updateServerInviteCode(
+    serverId: string,
+    inviteCode: string,
+    version: number
+  ): Promise<string> {
+    await pool.query("DELETE FROM server_invites WHERE server_id = $1", [
+      serverId,
+    ]);
+
+    const insertQuery = await pool.query(
+      "INSERT INTO server_invites (server_id, invite_code, version) VALUES($1, $2, $3) RETURNING *",
+      [serverId, inviteCode, version]
+    );
+    return insertQuery.rowCount ? insertQuery.rows[0].invite_code : "";
+  }
+
+  async getServerForInviteCode(
+    inviteCode: string
+  ): Promise<ServerPreview | undefined> {
+    const serverIdQuery = await pool.query(
+      "SELECT server_id FROM server_invites WHERE invite_code = $1",
+      [inviteCode]
+    );
+
+    if (serverIdQuery.rowCount) {
+      const getServerPreviewQuery = await pool.query(
+        "SELECT id, server_name, server_dp FROM servers WHERE id = $1",
+        [serverIdQuery.rows[0]["server_id"]]
+      );
+
+      const result = getServerPreviewQuery.rowCount
+        ? getServerPreviewQuery.rows[0]
+        : undefined;
+      const serverPreviewInfo =
+        result !== undefined
+          ? {
+              id: result["id"],
+              name: result["server_name"],
+              displayPicture: result["server_dp"],
+            }
+          : undefined;
+      return serverPreviewInfo;
+    }
   }
 }

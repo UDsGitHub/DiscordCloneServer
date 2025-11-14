@@ -1,5 +1,14 @@
-// ...existing code...
-export abstract class BaseUseCase<I extends any[] = [], O = unknown, P = unknown> {
+/**
+ * Abstract UseCase Class
+ * - I &rarr; Input Type, any number of arguments of any type
+ * - O &rarr; Output Type, the type for the result of handle method
+ * - P &rarr; Present Type, the type  for the result of present method
+ */
+export abstract class BaseUseCase<
+  I extends any[] = [],
+  O = unknown,
+  P = unknown
+> {
   /**
    * Execute the use case: runs handle(...) then presents the result.
    * Children must implement handle(). They may override present() for custom output.
@@ -38,7 +47,6 @@ export abstract class BaseUseCase<I extends any[] = [], O = unknown, P = unknown
       return { error: response.message, name: response.name } as unknown as P;
     }
 
-    // Buffer (Node)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const anyResp = response as any;
     if (typeof Buffer !== "undefined" && Buffer.isBuffer(anyResp)) {

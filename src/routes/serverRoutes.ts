@@ -17,5 +17,8 @@ router.post(
   compressImage,
   controller.createServer
 );
+router.get("/getInviteCode/:id", controller.getServerInviteCode);
+router.get("/getServerForInviteCode/:id", controller.getServerForInviteCode);
+router.post("/addMember", controller.addServerMember);
 
 export default router;
